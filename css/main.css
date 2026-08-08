@@ -1,7 +1,10 @@
+html {
+    height: 100%;
+}
+
 body {
     margin: 0;
     padding: 30px;
-
     font-family:
         -apple-system,
         BlinkMacSystemFont,
@@ -9,13 +12,25 @@ body {
 
     background: #111;
     color: white;
+    height: 100vh; /* Substitui min-height: 100dvh para matar o flique */
+    box-sizing: border-box; /* Impede que o padding de 30px quebre o tamanho */
+    overscroll-behavior: none;
+    -webkit-text-size-adjust: 100%;    
 }
 
 button {
     padding: 12px 20px;
-
     border: none;
     border-radius: 12px;
-
     font-size: 16px;
 }
+
+.view {
+    display: none;
+    padding-bottom: 70px; /* Prevents content from hiding behind bottom nav */
+}
+
+.view.active {
+    display: block;
+}
+

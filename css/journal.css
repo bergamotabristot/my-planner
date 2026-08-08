@@ -1,0 +1,173 @@
+/* 1. Trave o scroll global para eliminar qualquer barra de rolagem externa/fantasma */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* 2. Wrapper principal da tela do Diário */
+.journal-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100dvh;
+    overflow: hidden;
+}
+
+/* 3. Barra Superior FIXA no topo */
+.journal-top-bar {
+    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 26px 16px 14px;
+    box-sizing: border-box;
+    background-color: var(--bg-color, #111);
+    border-bottom: 1px solid var(--border-color, #2a2a2a);
+    z-index: 10;
+}
+
+.journal-top-btn {
+    padding: 6px 14px;
+    height: 34px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    background-color: var(--input-bg, #1e1e1e);
+    color: var(--text-color, #fff);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+/* 4. Container de Scroll (Alargado de 2px para 0) */
+.journal-container {
+    padding: 25px 0px;
+    display: block;
+    box-sizing: border-box;
+    overflow-y: auto;
+    height: calc(100dvh - 120px);
+    width: 100%;
+
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.journal-blocks-wrapper {
+    /* Reduz o padding lateral de 16px para 6px ou 8px para alargar os blocos */
+    padding: 10px 8px calc(80px + env(safe-area-inset-bottom)) 8px;
+    box-sizing: border-box;
+}
+
+.journal-day-block {
+    margin-bottom: 24px;
+    margin-top: 10px;
+    scroll-margin-top: 20px;
+}
+
+/* 5. Caixa de texto com folha pautada e scroll invisível */
+.journal-input {
+    width: 100%;
+    height: 300px;
+    padding: 2px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #444);
+    background-color: var(--input-bg, #1e1e1e);
+    color: var(--text-color, #fff);
+    font-size: 1.2rem;
+    resize: none;
+    font-family: inherit;
+    box-sizing: border-box;
+    overflow-y: auto;
+
+    /* Lined paper setup */
+    line-height: 33px;
+    background-image: linear-gradient(to bottom, transparent 32px, rgba(255, 255, 255, 0.12) 32px);
+    background-size: 100% 33px;
+    background-position: 0 33px; 
+    background-attachment: local;
+
+    /* Esconde a barra de rolagem da textarea */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.journal-input::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* Modal Overlay */
+.journal-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 1000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(4px);
+}
+
+.journal-modal-content {
+    background-color: var(--bg-color, #1a1a1a);
+    border: 1px solid var(--border-color, #333);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 360px;
+    padding: 20px;
+    box-sizing: border-box;
+    color: var(--text-color, #fff);
+}
+
+.journal-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.journal-modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.journal-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-color, #aaa);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Grade de Meses (3 colunas) */
+.journal-months-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.journal-month-btn {
+    padding: 14px 8px;
+    background-color: var(--input-bg, #262626);
+    color: var(--text-color, #fff);
+    border: 1px solid var(--border-color, #444);
+    border-radius: 10px;
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    transition: background-color 0.2s;
+}
+
+.journal-month-btn:active {
+    background-color: var(--border-color, #444);
+}
