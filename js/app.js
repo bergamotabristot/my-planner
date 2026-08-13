@@ -1,4 +1,5 @@
 import { initJournal, scrollToToday } from './journal/journal.js';
+import { initHabits, resetHabitsToCurrent } from './habits/habits.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     const navItems = document.querySelectorAll('.bottom-nav .nav-item');
@@ -18,11 +19,18 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             // Se o usuário clicou no botão do Journal na barra inferior, rola para "Today"
-            if (targetId === 'journal' || item.textContent.toLowerCase().includes('journal')) {
+            if (targetId === 'journal' || targetId === 'journal-view' || item.textContent.toLowerCase().includes('journal')) {
                 scrollToToday();
+            }
+
+            // Se o usuário clicou no Habits, inicializa/renderiza a tabela corretamente
+            if (targetId === 'habits' || targetId === 'habits-view' || item.textContent.toLowerCase().includes('habits')) {
+                resetHabitsToCurrent();
             }
         });
     });
 
     initJournal();
+    initHabits();
+    resetHabitsToCurrent();
 });
