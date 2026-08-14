@@ -461,6 +461,7 @@ export function renderHabitsMonthView() {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const today = new Date();
 
     const habits = getHabits().filter(h => h.name.trim() !== '');
 
@@ -477,23 +478,41 @@ export function renderHabitsMonthView() {
         grid.className = 'habit-month-grid';
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const targetDate = new Date(year, month, d);
+            const jsDay = targetDate.getDay();
+            const isSkippedDay = habit.skipDays && habit.skipDays.includes(jsDay);
+
+            // Omit rendering completely if it's a skip day
+            if (isSkippedDay) {
+                continue;
+            }
+
+            const isFuture = targetDate > today;
+            const status = getHabitDayStatus(habit, year, month, d);
+
             const box = document.createElement('div');
             box.className = 'habit-year-day-box';
             
-            const status = getHabitDayStatus(habit, year, month, d);
-            if (status === true) {
-                box.classList.add('checked');
+            if (isFuture) {
+                box.textContent = '';
+                box.classList.add('unchecked');
+            } else if (status === true) {
                 box.textContent = '✓';
-            } else if (status === 'dash') {
-                box.classList.add('dash');
+                box.classList.add('checked');
+            } else {
                 box.textContent = '-';
+                box.classList.add('dash'); // Past/present uncompleted days show as dash
             }
 
             box.addEventListener('click', () => {
+                if (isFuture) return;
+
                 let nextStatus;
-                if (status === true) nextStatus = 'dash';
-                else if (status === 'dash') nextStatus = false;
-                else nextStatus = true;
+                if (status === true) {
+                    nextStatus = 'dash';
+                } else {
+                    nextStatus = true;
+                }
 
                 setHabitDayStatus(habit.id, year, month, d, nextStatus);
                 renderHabitsMonthView();
@@ -506,14 +525,12 @@ export function renderHabitsMonthView() {
         container.appendChild(card);
     });
 
-    // Empty placeholder card
     const addCard = document.createElement('div');
     addCard.className = 'habit-month-card add-card';
     addCard.innerHTML = `<button type="button" class="add-habit-card-btn">+ New Habit</button>`;
     addCard.onclick = () => openHabitModal(null);
     container.appendChild(addCard);
 }
-
 // ----------------- YEAR VIEW (2 Stacked Rows per Month with Large Tappable Squares) -----------------
 
 export function renderHabitsYearView() {
@@ -522,7 +539,9 @@ export function renderHabitsYearView() {
     container.innerHTML = '';
 
     const year = currentDate.getFullYear();
+    const today = new Date();
     const validHabits = getHabits().filter(h => h.name.trim() !== '');
+    
     if (validHabits.length === 0) {
         container.innerHTML = '<div style="text-align: center; color: #888; padding: 40px;"><button class="btn-primary" id="yearAddHabitBtn">+ Create First Habit</button></div>';
         container.querySelector('#yearAddHabitBtn')?.addEventListener('click', () => openHabitModal(null));
@@ -534,16 +553,22 @@ export function renderHabitsYearView() {
     }
     const habit = validHabits[selectedYearHabitIndex];
 
-    // Summary Stat
     let totalYearCompleted = 0;
     let totalYearDays = 0;
 
     MONTH_NAMES_SHORT.forEach((_, monthIdx) => {
         const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
         for (let d = 1; d <= daysInMonth; d++) {
+            const targetDate = new Date(year, monthIdx, d);
+            if (targetDate > today) continue;
+
+            const jsDay = targetDate.getDay();
+            const isSkippedDay = habit.skipDays && habit.skipDays.includes(jsDay);
+            if (isSkippedDay) continue; // Exclude skip days from totals
+
             totalYearDays++;
             const status = getHabitDayStatus(habit, year, monthIdx, d);
-            if (status === true || status === 'dash') {
+            if (status === true) {
                 totalYearCompleted++;
             }
         }
@@ -556,7 +581,6 @@ export function renderHabitsYearView() {
     summaryEl.innerHTML = `<div>${totalYearCompleted}/${totalYearDays}</div><div style="font-size: 1rem; color: #888;">${percent}%</div>`;
     container.appendChild(summaryEl);
 
-    // Navigation Header with Dropdown Popup matching wireframe
     const navHeader = document.createElement('div');
     navHeader.className = 'habit-year-nav-header';
     navHeader.style.position = 'relative';
@@ -574,7 +598,6 @@ export function renderHabitsYearView() {
     habitTitleSpan.textContent = habit.name;
     habitTitleSpan.title = 'Click to switch habit';
 
-    // Dropdown list popup
     const dropdownMenu = document.createElement('div');
     dropdownMenu.className = 'habit-year-dropdown-popup';
     dropdownMenu.style.display = 'none';
@@ -618,15 +641,23 @@ export function renderHabitsYearView() {
     navHeader.appendChild(nextHabitBtn);
     container.appendChild(navHeader);
 
-    // 12 Months Rows (Each Month rendered with 2 rows of large squares)
     MONTH_NAMES_SHORT.forEach((mName, monthIdx) => {
         const daysInMonth = new Date(year, monthIdx + 1, 0).getDate();
-        let completedCount = 0;
+        let monthCompletedCount = 0;
+        let monthTrackedDays = 0;
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const targetDate = new Date(year, monthIdx, d);
+            if (targetDate > today) continue;
+
+            const jsDay = targetDate.getDay();
+            const isSkippedDay = habit.skipDays && habit.skipDays.includes(jsDay);
+            if (isSkippedDay) continue;
+
+            monthTrackedDays++;
             const status = getHabitDayStatus(habit, year, monthIdx, d);
-            if (status === true || status === 'dash') {
-                completedCount++;
+            if (status === true) {
+                monthCompletedCount++;
             }
         }
 
@@ -638,29 +669,46 @@ export function renderHabitsYearView() {
         label.textContent = mName;
         row.appendChild(label);
 
-        // 2-row grid of boxes (up to 16 columns per row)
         const grid = document.createElement('div');
         grid.className = 'habit-year-month-grid';
 
         for (let d = 1; d <= daysInMonth; d++) {
+            const targetDate = new Date(year, monthIdx, d);
+            const jsDay = targetDate.getDay();
+            const isSkippedDay = habit.skipDays && habit.skipDays.includes(jsDay);
+
+            // Completely omit rendering skip days
+            if (isSkippedDay) {
+                continue;
+            }
+
+            const isFuture = targetDate > today;
+            const status = getHabitDayStatus(habit, year, monthIdx, d);
+
             const box = document.createElement('div');
             box.className = 'habit-year-day-box';
             box.title = `${mName} ${d}`;
             
-            const status = getHabitDayStatus(habit, year, monthIdx, d);
-            if (status === true) {
+            if (isFuture) {
+                box.textContent = '';
+                box.classList.add('unchecked');
+            } else if (status === true) {
                 box.classList.add('checked');
                 box.textContent = '✓';
-            } else if (status === 'dash') {
+            } else {
                 box.classList.add('dash');
                 box.textContent = '-';
             }
 
             box.onclick = () => {
+                if (isFuture) return;
+
                 let nextStatus;
-                if (status === true) nextStatus = 'dash';
-                else if (status === 'dash') nextStatus = false;
-                else nextStatus = true;
+                if (status === true) {
+                    nextStatus = 'dash';
+                } else {
+                    nextStatus = true;
+                }
 
                 setHabitDayStatus(habit.id, year, monthIdx, d, nextStatus);
                 renderHabitsYearView();
@@ -672,15 +720,15 @@ export function renderHabitsYearView() {
 
         const stats = document.createElement('span');
         stats.className = 'habit-year-month-stats';
-        const monthPercent = daysInMonth > 0 ? Math.round((completedCount / daysInMonth) * 100) : 0;
-        stats.textContent = `${completedCount}/${daysInMonth}\n${monthPercent}%`;
+        const monthPercent = monthTrackedDays > 0 ? Math.round((monthCompletedCount / monthTrackedDays) * 100) : 0;
+        stats.textContent = `${monthCompletedCount}/${monthTrackedDays}\n${monthPercent}%`;
         row.appendChild(stats);
 
         container.appendChild(row);
     });
-}
+} 
 
-// ----------------- SLEEP TRACKER -----------------
+//SLEEP TRACKER -----------------
 
 function loadSleepData() {
     const weekKey = getWeekKey(currentDate);
