@@ -876,12 +876,11 @@ export function renderSleepChart() {
         // Tap column to open modal
         if (isPastOrToday) {
             col.style.cursor = 'pointer';
-            col.onclick = (e) => {
-                // Only open modal if not actively dragging
-                if (!isDraggingSleep) {
-                    openSleepModal(index);
-                }
-            };
+           col.onclick = () => {
+    if (isDraggingSleep) return;
+
+    openSleepModal(index);
+};
         }
 
         const label = document.createElement('span');
@@ -906,69 +905,171 @@ let dragStartHours = 0; // Store original hours so Cancel can revert
 
 function setupSleepChartInteractivity() {
     const chart = document.getElementById('sleepChartContainer');
-    if (!chart) return;
+    const grid = document.getElementById('sleepBarsGrid');
 
+    if (!chart || !grid) return;
+
+    let pointerDown = false;
     let startY = 0;
+    let startX = 0;
+    let activeIndex = null;
+    let didDrag = false;
 
-    function handlePointerStart(e) {
-        const rect = chart.getBoundingClientRect();
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    function getColumnIndex(clientX) {
+        const rect = grid.getBoundingClientRect();
 
-        const relX = clientX - rect.left;
+        const relativeX = clientX - rect.left;
         const colWidth = rect.width / 7;
-        const colIdx = Math.floor(relX / colWidth);
 
-        if (colIdx >= 0 && colIdx < 7) {
-            activeDragIndex = colIdx;
-            startY = clientY;
-            isDraggingSleep = false;
-            dragStartHours = sleepData[colIdx]?.hours || 0;
+        const index = Math.floor(relativeX / colWidth);
+
+        if (index < 0 || index >= 7) {
+            return null;
         }
+
+        return index;
+    }
+
+    function getHoursFromY(clientY) {
+        const rect = grid.getBoundingClientRect();
+
+        // Keep the slider inside the chart
+        const relativeY = Math.max(
+            0,
+            Math.min(rect.height, clientY - rect.top)
+        );
+
+        // Top = 10 hours
+        // Bottom = 5 hours
+        const percent = 1 - (relativeY / rect.height);
+
+        let hours = 5 + (percent * 5);
+
+        // 30 minute increments
+        hours = Math.round(hours * 2) / 2;
+
+        return Math.max(5, Math.min(10, hours));
+    }
+
+    function updateDraggedHours(clientY) {
+        if (activeIndex === null) return;
+
+        const hours = getHoursFromY(clientY);
+
+        if (!sleepData[activeIndex]) {
+            sleepData[activeIndex] = {
+                hours: hours,
+                quality: 0
+            };
+        } else {
+            sleepData[activeIndex].hours = hours;
+        }
+
+        renderSleepChart();
+    }
+
+    function handlePointerDown(e) {
+        // Only primary finger / mouse button
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        const index = getColumnIndex(e.clientX);
+
+        if (index === null) return;
+
+        const now = new Date();
+        const currentWeekKey = getWeekKey(currentDate);
+        const liveWeekKey = getWeekKey(now);
+
+        let todayIndex = -1;
+
+        if (currentWeekKey === liveWeekKey) {
+            const jsDay = now.getDay();
+            todayIndex = jsDay === 0 ? 6 : jsDay - 1;
+        } else {
+            const startTarget = getStartOfWeek(currentDate);
+            const startLive = getStartOfWeek(now);
+
+            todayIndex = startTarget > startLive ? -1 : 6;
+        }
+
+        // Don't allow future days
+        if (index > todayIndex) return;
+
+        pointerDown = true;
+        didDrag = false;
+
+        activeIndex = index;
+
+        startX = e.clientX;
+        startY = e.clientY;
+
+        dragStartHours = sleepData[index]?.hours || 0;
+
+        chart.setPointerCapture?.(e.pointerId);
+
+        e.preventDefault();
     }
 
     function handlePointerMove(e) {
-        if (activeDragIndex === null) return;
+        if (!pointerDown || activeIndex === null) return;
 
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
 
-        if (Math.abs(clientY - startY) > 5) {
+        // Require a small movement before considering this a drag
+        if (!didDrag && Math.sqrt(dx * dx + dy * dy) > 6) {
+            didDrag = true;
             isDraggingSleep = true;
         }
 
-        if (isDraggingSleep) {
-            const rect = chart.getBoundingClientRect();
-            const relY = Math.max(0, Math.min(rect.height, clientY - rect.top));
-            const percentFromBottom = 1 - (relY / rect.height);
+        if (!didDrag) return;
 
-            let hours = 5 + (percentFromBottom * 5);
-            hours = Math.round(hours * 2) / 2;
-            hours = Math.max(4.0, Math.min(11.0, hours));
+        e.preventDefault();
 
-            if (!sleepData[activeDragIndex]) {
-                sleepData[activeDragIndex] = { hours: 7.5, quality: 0 };
-            }
-            sleepData[activeDragIndex].hours = hours;
-
-            renderSleepChart();
-        }
+        updateDraggedHours(e.clientY);
     }
 
-    function handlePointerEnd() {
-        if (isDraggingSleep && activeDragIndex !== null) {
-            openSleepQualityPopup(activeDragIndex);
+    function handlePointerUp(e) {
+        if (!pointerDown) return;
+
+        pointerDown = false;
+
+        const index = activeIndex;
+        activeIndex = null;
+
+        chart.releasePointerCapture?.(e.pointerId);
+
+        if (didDrag && index !== null) {
+            // Finger was dragged → open rating popup
+            isDraggingSleep = true;
+
+            openSleepQualityPopup(index);
+
+            // Prevent the normal column click from opening another modal
+            setTimeout(() => {
+                isDraggingSleep = false;
+            }, 300);
+        } else {
+            // It was just a tap
+            isDraggingSleep = false;
         }
-        activeDragIndex = null;
-        setTimeout(() => { isDraggingSleep = false; }, 150);
+
+        didDrag = false;
     }
 
-    chart.addEventListener('mousedown', handlePointerStart);
-    window.addEventListener('mousemove', handlePointerMove);
-    window.addEventListener('mouseup', handlePointerEnd);
+    function handlePointerCancel(e) {
+        pointerDown = false;
+        activeIndex = null;
+        didDrag = false;
+        isDraggingSleep = false;
 
-    chart.addEventListener('touchstart', handlePointerStart, { passive: true });
-    window.addEventListener('touchmove', handlePointerMove, { passive: true });
-    window.addEventListener('touchend', handlePointerEnd);
+        chart.releasePointerCapture?.(e.pointerId);
+    }
+
+    chart.addEventListener('pointerdown', handlePointerDown);
+    chart.addEventListener('pointermove', handlePointerMove);
+    chart.addEventListener('pointerup', handlePointerUp);
+    chart.addEventListener('pointercancel', handlePointerCancel);
 }
 
 // ----------------- SLEEP QUALITY STAR POPUP -----------------
@@ -989,25 +1090,45 @@ function setupSleepModal() {
     });
 
     if (cancelBtn) {
-        cancelBtn.onclick = () => {
-            if (modalSleepIndex !== null) {
-                sleepData[modalSleepIndex].hours = dragStartHours;
-                renderSleepChart();
+    cancelBtn.onclick = () => {
+        if (modalSleepIndex !== null) {
+            if (!sleepData[modalSleepIndex]) {
+                sleepData[modalSleepIndex] = {
+                    hours: 0,
+                    quality: 0
+                };
             }
-            modal.style.display = 'none';
-        };
-    }
+
+            sleepData[modalSleepIndex].hours = dragStartHours;
+
+            renderSleepChart();
+        }
+
+        modal.style.display = 'none';
+        modalSleepIndex = null;
+    };
+}
 
     if (confirmBtn) {
-        confirmBtn.onclick = () => {
-            if (modalSleepIndex !== null) {
-                sleepData[modalSleepIndex].quality = modalSelectedRating;
-                saveSleep();
-                renderSleepChart();
+    confirmBtn.onclick = () => {
+        if (modalSleepIndex !== null) {
+            if (!sleepData[modalSleepIndex]) {
+                sleepData[modalSleepIndex] = {
+                    hours: 0,
+                    quality: 0
+                };
             }
-            modal.style.display = 'none';
-        };
-    }
+
+            sleepData[modalSleepIndex].quality = modalSelectedRating;
+
+            saveSleep();
+            renderSleepChart();
+        }
+
+        modal.style.display = 'none';
+        modalSleepIndex = null;
+    };
+}
 
     modal.onclick = (e) => {
         if (e.target === modal) {
@@ -1027,21 +1148,30 @@ function updateStarVisuals() {
         star.classList.toggle('active', r <= modalSelectedRating);
     });
 }
-
 function openSleepQualityPopup(index) {
     const modal = document.getElementById('sleepPromptModal');
     const hoursText = document.getElementById('promptHoursText');
+
     if (!modal) return;
 
     modalSleepIndex = index;
-    const current = sleepData[index] || { hours: 7, quality: 4 };
-    modalSelectedRating = current.quality > 0 ? current.quality : 4;
+
+    const current = sleepData[index] || {
+        hours: 7.5,
+        quality: 4
+    };
+
+    modalSelectedRating = current.quality > 0
+        ? current.quality
+        : 4;
 
     if (hoursText) {
-        hoursText.textContent = `${DAYS_FULL[index]} · ${current.hours.toFixed(1)} hrs`;
+        hoursText.textContent =
+            `${DAYS_FULL[index]} · ${current.hours.toFixed(1)} hrs`;
     }
 
     updateStarVisuals();
+
     modal.style.display = 'flex';
 }
 

@@ -116,11 +116,8 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding: 0 14px calc(75px + env(safe-area-inset-bottom, 0px)) 14px;
+    padding: 0 14px 75px 14px;
     box-sizing: border-box;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    -webkit-overflow-scrolling: touch;
 }
 
 .schedule-subview-container::-webkit-scrollbar {
@@ -606,7 +603,6 @@
     border-radius: 20px;
     width: 100%;
     max-width: 360px;
-    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 20px;
     box-sizing: border-box;
     box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
@@ -846,7 +842,6 @@
     border-radius: 20px;
     width: 100%;
     max-width: 360px;
-    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 20px;
     box-sizing: border-box;
     display: flex;

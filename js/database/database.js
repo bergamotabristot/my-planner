@@ -20,21 +20,80 @@ const userChangeListeners = new Set();
 
 export function getUsers() {
     const raw = localStorage.getItem(USERS_KEY);
+
+    // Completely new device / first launch
     if (!raw) {
-        const initial = [DEFAULT_USER];
+        const initial = [{
+            ...DEFAULT_USER,
+            createdAt: Date.now()
+        }];
+
         localStorage.setItem(USERS_KEY, JSON.stringify(initial));
+        localStorage.setItem(ACTIVE_USER_KEY, DEFAULT_USER.id);
+
+        // Initialize empty storage for the default profile
+        setUserItem('schedule_events', [], DEFAULT_USER.id);
+        setUserItem('schedule_todos', [], DEFAULT_USER.id);
+        setUserItem('habits_data', [], DEFAULT_USER.id);
+        setUserItem('sleep_data', {}, DEFAULT_USER.id);
+        setUserItem('journal_entries', {}, DEFAULT_USER.id);
+
         return initial;
     }
+
     try {
         const list = JSON.parse(raw);
-        return Array.isArray(list) && list.length > 0 ? list : [DEFAULT_USER];
+
+        if (Array.isArray(list) && list.length > 0) {
+            return list;
+        }
+
+        // Corrupted/empty user list
+        const initial = [{
+            ...DEFAULT_USER,
+            createdAt: Date.now()
+        }];
+
+        localStorage.setItem(USERS_KEY, JSON.stringify(initial));
+        localStorage.setItem(ACTIVE_USER_KEY, DEFAULT_USER.id);
+
+        setUserItem('schedule_events', [], DEFAULT_USER.id);
+        setUserItem('schedule_todos', [], DEFAULT_USER.id);
+        setUserItem('habits_data', [], DEFAULT_USER.id);
+        setUserItem('sleep_data', {}, DEFAULT_USER.id);
+        setUserItem('journal_entries', {}, DEFAULT_USER.id);
+
+        return initial;
+
     } catch {
-        return [DEFAULT_USER];
+        const initial = [{
+            ...DEFAULT_USER,
+            createdAt: Date.now()
+        }];
+
+        localStorage.setItem(USERS_KEY, JSON.stringify(initial));
+        localStorage.setItem(ACTIVE_USER_KEY, DEFAULT_USER.id);
+
+        setUserItem('schedule_events', [], DEFAULT_USER.id);
+        setUserItem('schedule_todos', [], DEFAULT_USER.id);
+        setUserItem('habits_data', [], DEFAULT_USER.id);
+        setUserItem('sleep_data', {}, DEFAULT_USER.id);
+        setUserItem('journal_entries', {}, DEFAULT_USER.id);
+
+        return initial;
     }
 }
 
 export function saveUsers(users) {
     localStorage.setItem(USERS_KEY, JSON.stringify(users));
+}
+
+function initializeUserStorage(userId) {
+    setUserItem('schedule_events', [], userId);
+    setUserItem('schedule_todos', [], userId);
+    setUserItem('habits_data', [], userId);
+    setUserItem('sleep_data', {}, userId);
+    setUserItem('journal_entries', {}, userId);
 }
 
 export function getActiveUserId() {

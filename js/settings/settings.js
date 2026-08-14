@@ -29,12 +29,35 @@ export function initTheme() {
 
 export function initSettings() {
     initTheme();
+
+    // Create a default profile on a fresh installation
+    let user = getActiveUser();
+
+    if (!user) {
+        const users = getUsers();
+
+        if (!users || users.length === 0) {
+            user = createUser({
+                name: 'Me',
+                avatar: '👤',
+                color: '#00a8ff'
+            });
+
+            setActiveUser(user.id);
+        } else {
+            // Users exist, but no active user is selected
+            setActiveUser(users[0].id);
+            user = getActiveUser();
+        }
+    }
+
     setupSettingsModalStructure();
     createSettingsButton();
     updateHeaderUserBadge();
 
     subscribeUserChange(() => {
         updateHeaderUserBadge();
+
         if (currentSettingsScreen === 'account') {
             renderAccountScreen();
         }
@@ -47,10 +70,21 @@ function updateHeaderUserBadge() {
     if (!badgeBtn) return;
 
     const user = getActiveUser();
+
+    if (!user) {
+        badgeBtn.innerHTML = `
+            <span class="badge-avatar">👤</span>
+            <span class="badge-name">User</span>
+        `;
+        badgeBtn.style.borderColor = '#00a8ff';
+        return;
+    }
+
     badgeBtn.innerHTML = `
         <span class="badge-avatar">${user.avatar || '👤'}</span>
         <span class="badge-name">${user.name || 'User'}</span>
     `;
+
     badgeBtn.style.borderColor = user.color || '#00a8ff';
 }
 

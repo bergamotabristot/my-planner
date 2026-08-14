@@ -1,15 +1,9 @@
 /* css/variables.css - Global Design System Tokens & Theme Engine */
 
 :root {
-    /* Safe Area Insets for iOS & Mobile notches / home bars */
-    --sat: env(safe-area-inset-top, 0px);
-    --sab: env(safe-area-inset-bottom, 0px);
-    --sal: env(safe-area-inset-left, 0px);
-    --sar: env(safe-area-inset-right, 0px);
+  
     
-    /* Dynamic UI Heights */
-    --nav-bar-height: 64px;
-    --total-nav-height: calc(var(--nav-bar-height) + var(--sab));
+
 
     /* Typography & Radius */
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;

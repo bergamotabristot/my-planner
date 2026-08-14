@@ -173,56 +173,70 @@
 
 
 
-                <!-- Sleep Section -->
+               <!-- Sleep Section -->
+<div class="sleep-section">
 
-                <div class="sleep-section">
+    <h3>sleep</h3>
 
-                    <h3>sleep</h3>
+    <div class="sleep-chart-container" id="sleepChartContainer">
+        <div class="sleep-bars-grid" id="sleepBarsGrid"></div>
+    </div>
 
-                   
+    <div class="sleep-stats">
+        <span>
+            Average:
+            <strong id="sleepAvg">0 hours</strong>
+        </span>
 
-                    <div class="sleep-chart-container" id="sleepChartContainer">
+        <span>
+            Median:
+            <strong id="sleepMedian">0 hours</strong>
+        </span>
+    </div>
 
-                        <!-- SVG injected by JS -->
+</div>
 
-                        <div class="sleep-bars-grid" id="sleepBarsGrid"></div>
+<!-- Modal OUTSIDE sleep-section -->
+<div id="sleepPromptModal" class="sleep-modal-overlay" style="display: none;">
+    <div class="sleep-modal-content">
 
-                    </div>
+        <h4>Sleep Quality</h4>
 
+        <div class="sleep-star-picker" id="sleepStarPicker">
+            <span data-rating="1">★</span>
+            <span data-rating="2">★</span>
+            <span data-rating="3">★</span>
+            <span data-rating="4">★</span>
+            <span data-rating="5">★</span>
+        </div>
 
+        <p id="promptHoursText"></p>
 
-                    <div class="sleep-stats">
+        <div class="sleep-modal-btn-row">
+            <button id="cancelSleepBtn" class="sleep-cancel-btn">
+                Cancel
+            </button>
 
-                        <span>Average: <strong id="sleepAvg">0 hours</strong></span>
+            <button id="confirmSleepBtn" class="sleep-confirm-btn">
+                Confirm
+            </button>
+        </div>
 
-                        <span>Median: <strong id="sleepMedian">0 hours</strong></span>
+    </div>
+</div>
 
-                    </div>
+<!-- KEEP THESE -->
+<div class="sleep-stats">
+    <span>
+        Average:
+        <strong id="sleepAvg">0 hours</strong>
+    </span>
 
-                </div>
-
-
-
-                <!-- Sleep Quality Modal Overlay (Opens on release of slider) -->
-                <div id="sleepPromptModal" class="sleep-modal-overlay" style="display: none;">
-                    <div class="sleep-modal-content">
-                        <h4>Sleep Quality</h4>
-                        <div class="sleep-star-picker" id="sleepStarPicker">
-                            <span data-rating="1">★</span>
-                            <span data-rating="2">★</span>
-                            <span data-rating="3">★</span>
-                            <span data-rating="4">★</span>
-                            <span data-rating="5">★</span>
-                        </div>
-                        <p id="promptHoursText" style="font-size: 0.95rem; margin: 6px 0 16px 0; color: #aaaaaa;"></p>
-                        <div class="sleep-modal-btn-row">
-                            <button id="cancelSleepBtn" class="sleep-cancel-btn">Cancel</button>
-                            <button id="confirmSleepBtn" class="sleep-confirm-btn">Confirm</button>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
+    <span>
+        Median:
+        <strong id="sleepMedian">0 hours</strong>
+    </span>
+</div>
 
 
 

@@ -65,7 +65,6 @@
     border-radius: 20px;
     width: 100%;
     max-width: 360px;
-    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 20px;
     box-sizing: border-box;
     display: flex;
