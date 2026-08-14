@@ -1,0 +1,1031 @@
+/* css/schedule.css - Schedule Tab Styling (Day, Week, Month Views & Modals for Mobile/iOS) */
+
+/* 1. Subview & Main Layout */
+#schedule-view {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: #ffffff;
+    background-color: var(--bg-color, #111111);
+}
+
+#schedule-view.active {
+    display: flex;
+}
+
+/* 2. Top Navigation: Day / Week / Month switcher & Options */
+.schedule-top-nav {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: max(12px, calc(env(safe-area-inset-top, 0px) + 8px)) 16px 6px;
+    box-sizing: border-box;
+}
+
+.schedule-view-switcher {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.schedule-tab-btn {
+    background: transparent;
+    border: 2px solid transparent;
+    color: #888888;
+    font-size: 1.35rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 5px 12px;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.schedule-tab-btn:hover, .schedule-tab-btn:active {
+    color: #ffffff;
+}
+
+/* Wireframe aesthetic: Active tab has a distinct rounded border box */
+.schedule-tab-btn.active {
+    color: #ffffff;
+    border-color: #ffffff;
+    font-weight: 600;
+}
+
+.schedule-options-btn {
+    background: transparent;
+    border: 1.5px solid #555555;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    transition: border-color 0.2s, background-color 0.2s;
+    touch-action: manipulation;
+}
+
+.schedule-options-btn:active {
+    border-color: #ffffff;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Date Navigator Sub-Bar: < 24/04 > */
+.schedule-date-nav {
+    flex-shrink: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    padding: 4px 0 10px;
+    color: #ffffff;
+    font-size: 1.15rem;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.schedule-nav-arrow {
+    background: transparent;
+    border: none;
+    color: #888888;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 4px 12px;
+    transition: color 0.2s;
+    user-select: none;
+    touch-action: manipulation;
+}
+
+.schedule-nav-arrow:active {
+    color: #ffffff;
+}
+
+.schedule-date-label {
+    user-select: none;
+    font-family: inherit;
+}
+
+/* Sub-view Scroll Container */
+.schedule-subview-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 14px calc(75px + env(safe-area-inset-bottom, 0px)) 14px;
+    box-sizing: border-box;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.schedule-subview-container::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
+/* ==========================================================================
+   3. DAY VIEW
+   ========================================================================== */
+.schedule-day-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    width: 100%;
+}
+
+/* Timeline Layout */
+.schedule-timeline-container {
+    display: flex;
+    width: 100%;
+    position: relative;
+    border-left: 1px solid rgba(255, 255, 255, 0.15);
+    padding-left: 4px;
+    box-sizing: border-box;
+}
+
+.schedule-hours-col {
+    width: 50px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-hour-label {
+    height: 50px;
+    font-size: 0.8rem;
+    color: #888888;
+    display: flex;
+    align-items: flex-start;
+    padding-top: 0;
+    box-sizing: border-box;
+    font-variant-numeric: tabular-nums;
+}
+
+.schedule-grid-col {
+    flex: 1;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.schedule-grid-line {
+    height: 50px;
+    border-top: 1px dotted rgba(255, 255, 255, 0.15);
+    box-sizing: border-box;
+}
+
+.schedule-events-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+}
+
+/* Event Blocks in Day Timeline */
+.schedule-event-block {
+    position: absolute;
+    pointer-events: auto;
+    border: 2px solid #ff9f43;
+    border-radius: 12px;
+    padding: 6px 10px;
+    box-sizing: border-box;
+    background-color: rgba(255, 159, 67, 0.14);
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    transition: transform 0.15s;
+    z-index: 2;
+    touch-action: manipulation;
+}
+
+.schedule-event-block:active {
+    transform: scale(0.98);
+}
+
+.schedule-event-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-event-time {
+    font-size: 0.75rem;
+    color: #cccccc;
+    margin-top: 2px;
+}
+
+/* Middle Action Bar */
+.schedule-middle-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 2px;
+}
+
+.schedule-category-pill {
+    background: transparent;
+    border: 2px solid #ff9f43;
+    color: #ff9f43;
+    border-radius: 16px;
+    padding: 6px 16px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    touch-action: manipulation;
+}
+
+.schedule-category-pill:active {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.schedule-add-btn {
+    width: 44px;
+    height: 44px;
+    background: transparent;
+    border: 2px solid #ffffff;
+    color: #ffffff;
+    border-radius: 12px;
+    font-size: 1.8rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s;
+    touch-action: manipulation;
+}
+
+.schedule-add-btn:active {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: scale(0.95);
+}
+
+/* To-Do Section (Lined Paper Style) */
+.schedule-todo-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 2px;
+    padding-bottom: 20px;
+}
+
+.schedule-todo-header {
+    font-size: 1.35rem;
+    font-weight: 600;
+    margin: 0 0 8px 2px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+.schedule-todo-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.schedule-todo-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 44px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    gap: 12px;
+}
+
+.schedule-todo-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    font-size: 16px !important; /* Prevents iOS auto-zoom */
+    outline: none;
+    font-family: inherit;
+    padding: 6px 0;
+}
+
+.schedule-todo-input::placeholder {
+    color: #555555;
+}
+
+.schedule-todo-row.completed .schedule-todo-input {
+    text-decoration: line-through;
+    color: #666666;
+}
+
+.schedule-todo-checkbox {
+    width: 28px;
+    height: 28px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-radius: 8px;
+    background: transparent;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    touch-action: manipulation;
+}
+
+.schedule-todo-checkbox.checked {
+    border-color: #2ed573;
+    background-color: rgba(46, 213, 115, 0.2);
+    color: #2ed573;
+}
+
+.schedule-todo-checkbox.disabled {
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   4. WEEK VIEW
+   ========================================================================== */
+.schedule-week-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+}
+
+.schedule-week-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    width: 100%;
+}
+
+.schedule-week-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    min-height: 115px;
+    display: flex;
+    flex-direction: column;
+    touch-action: manipulation;
+}
+
+.schedule-week-card:active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.schedule-week-day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.schedule-week-day-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #ffffff;
+}
+
+/* Circled / rounded pill highlight for active/selected day matching wireframe */
+.schedule-week-day-name.highlighted-pill {
+    border: 2px solid #ffffff;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-weight: 600;
+}
+
+.schedule-week-day-date {
+    font-size: 0.75rem;
+    color: #777777;
+}
+
+.schedule-week-day-content {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    flex: 1;
+}
+
+.schedule-week-event-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.78rem;
+    padding: 2px 4px;
+    border-left: 2px solid #ff9f43;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.02);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-week-event-time {
+    color: #888888;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.schedule-week-event-title {
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-week-todo-line {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.76rem;
+    color: #bbbbbb;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-week-todo-line.completed {
+    text-decoration: line-through;
+    color: #555555;
+}
+
+.schedule-week-todo-bullet {
+    color: #00a8ff;
+    font-weight: bold;
+}
+
+.schedule-week-blank-line {
+    height: 12px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* ==========================================================================
+   5. MONTH VIEW
+   ========================================================================== */
+.schedule-month-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.schedule-month-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.schedule-month-header-cell {
+    padding: 7px 0;
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888888;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.schedule-month-cell {
+    min-height: 64px;
+    border-right: 1px solid rgba(255, 255, 255, 0.15);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 3px 4px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.15s;
+    touch-action: manipulation;
+}
+
+.schedule-month-cell:nth-child(7n) {
+    border-right: none;
+}
+
+.schedule-month-cell:active {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.schedule-month-cell.other-month {
+    opacity: 0.25;
+}
+
+.schedule-month-cell.is-today {
+    background-color: rgba(0, 168, 255, 0.12);
+}
+
+.schedule-month-cell.is-today .schedule-month-day-num {
+    color: #00a8ff;
+    font-weight: bold;
+}
+
+.schedule-month-day-num {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #ffffff;
+    line-height: 1;
+}
+
+/* Red crossed 'X' for past days matching wireframe */
+.schedule-month-cross {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.6rem;
+    color: rgba(255, 71, 87, 0.7);
+    pointer-events: none;
+    font-weight: 300;
+}
+
+.schedule-month-events {
+    margin-top: 3px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.schedule-month-event-item {
+    font-size: 0.65rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+.schedule-month-event-more {
+    font-size: 0.6rem;
+    color: #888888;
+}
+
+/* ==========================================================================
+   6. MODALS & POPUPS (Mobile & iOS SafeArea Centered)
+   ========================================================================== */
+.schedule-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background-color: rgba(0, 0, 0, 0.78);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2000;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.schedule-modal-content {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 360px;
+    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 20px;
+    box-sizing: border-box;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Event Title Input */
+.event-title-input {
+    width: 100%;
+    background: #242424;
+    border: 1px solid #444444;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 16px !important; /* 16px prevents iOS zoom */
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.event-title-input:focus {
+    border-color: #ffffff;
+}
+
+/* Time Inputs Row */
+.event-time-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 10px;
+}
+
+.time-field {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.time-field label {
+    font-size: 0.8rem;
+    color: #888888;
+    text-transform: lowercase;
+}
+
+.time-box {
+    background: #242424;
+    border: 1px solid #444444;
+    border-radius: 10px;
+    color: #ffffff;
+    font-size: 16px !important; /* 16px prevents iOS zoom */
+    padding: 8px 10px;
+    font-family: inherit;
+    outline: none;
+    text-align: center;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+/* Category Pills */
+.event-field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.field-label {
+    font-size: 0.82rem;
+    color: #aaaaaa;
+}
+
+.category-pills-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.category-pill-opt {
+    background: transparent;
+    border: 1px solid var(--cat-color, #ffffff);
+    color: var(--cat-color, #ffffff);
+    border-radius: 12px;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    touch-action: manipulation;
+}
+
+.category-pill-opt.selected {
+    background-color: var(--cat-color, #ffffff);
+    color: #111111;
+    font-weight: bold;
+}
+
+/* Repeat Accordion matching wireframe */
+.repeat-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.repeat-summary-btn {
+    background: #242424;
+    border: 1px solid #444444;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 5px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.repeat-options-card {
+    background: #222222;
+    border: 1px solid #383838;
+    border-radius: 12px;
+    padding: 10px;
+    margin-top: 8px;
+}
+
+.repeat-days-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.repeat-day-btn {
+    background: transparent;
+    border: 1px solid #444444;
+    color: #cccccc;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    touch-action: manipulation;
+}
+
+.repeat-day-btn.selected {
+    background: #ffffff;
+    color: #111111;
+    font-weight: bold;
+    border-color: #ffffff;
+}
+
+.repeat-duration-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #aaaaaa;
+}
+
+.stepper-box {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.weeks-input {
+    width: 48px;
+    background: #1a1a1a;
+    border: 1px solid #444444;
+    border-radius: 6px;
+    color: #ffffff;
+    text-align: center;
+    padding: 6px;
+    font-size: 16px !important;
+}
+
+/* Event Modal Footer */
+.event-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    flex-shrink: 0;
+}
+
+.modal-actions-right {
+    display: flex;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.modal-action-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #444444;
+    background: #242424;
+    color: #ffffff;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    touch-action: manipulation;
+}
+
+.modal-action-btn.cancel-btn:active {
+    background: #ff4757;
+    border-color: #ff4757;
+}
+
+.modal-action-btn.confirm-btn:active {
+    background: #2ed573;
+    border-color: #2ed573;
+}
+
+.modal-delete-btn {
+    background: transparent;
+    border: 1px solid #ff4757;
+    color: #ff4757;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* ==========================================================================
+   7. DAY DETAIL MODAL (from Month View)
+   ========================================================================== */
+.schedule-day-detail-content {
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 360px;
+    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    color: #ffffff;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+.schedule-day-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 10px;
+    flex-shrink: 0;
+}
+
+.schedule-detail-title-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.schedule-detail-date-badge {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.schedule-detail-date-full {
+    font-size: 0.8rem;
+    color: #777777;
+}
+
+.schedule-detail-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.schedule-detail-jump-btn {
+    background: #262626;
+    border: 1px solid #444444;
+    color: #00a8ff;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.schedule-detail-close-btn {
+    background: transparent;
+    border: none;
+    color: #888888;
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.schedule-day-detail-body {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.schedule-detail-section-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #888888;
+    letter-spacing: 1px;
+}
+
+.schedule-detail-events-list,
+.schedule-detail-todos-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.schedule-detail-event-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background: #222222;
+    border-left: 3px solid #ff9f43;
+    border-radius: 8px;
+    font-size: 0.85rem;
+}
+
+.schedule-detail-event-time {
+    color: #888888;
+    font-size: 0.75rem;
+}
+
+.schedule-detail-todo-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.9rem;
+}
+
+.schedule-detail-todo-item.completed .schedule-detail-todo-text {
+    text-decoration: line-through;
+    color: #666666;
+}
+
+.schedule-detail-empty {
+    font-size: 0.85rem;
+    color: #666666;
+    font-style: italic;
+    padding: 4px 0;
+}
+
+.schedule-detail-new-task {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-shrink: 0;
+}
+
+.schedule-detail-input {
+    flex: 1;
+    background: #222222;
+    border: 1px solid #444444;
+    border-radius: 8px;
+    color: #ffffff;
+    padding: 8px 10px;
+    font-size: 16px !important; /* 16px prevents iOS zoom */
+    outline: none;
+}
+
+.schedule-detail-add-event-btn {
+    background: #00a8ff;
+    border: none;
+    color: #ffffff;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* Dropdown Menu for options */
+.schedule-dropdown-menu {
+    position: fixed;
+    top: max(60px, calc(env(safe-area-inset-top, 0px) + 50px));
+    right: max(16px, calc(env(safe-area-inset-right, 0px) + 12px));
+    background-color: #1a1a1a;
+    border: 1px solid #333333;
+    border-radius: 14px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6);
+    z-index: 1500;
+    display: flex;
+    flex-direction: column;
+    min-width: 180px;
+    overflow: hidden;
+}
+
+.schedule-dropdown-item {
+    background: transparent;
+    border: none;
+    color: #ffffff;
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s;
+    touch-action: manipulation;
+}
+
+.schedule-dropdown-item:active {
+    background-color: #2a2a2a;
+}

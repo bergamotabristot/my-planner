@@ -1,0 +1,568 @@
+/* css/settings.css - Master Settings Flow, Theme Switcher, Account, and Help */
+
+/* 1. Header User Profile Badge Button */
+.header-user-badge-btn {
+    position: fixed;
+    top: max(12px, calc(env(safe-area-inset-top, 0px) + 8px));
+    right: max(14px, calc(env(safe-area-inset-right, 0px) + 12px));
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface-bg, #1a1a1a);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1.5px solid var(--accent-blue, #00a8ff);
+    border-radius: 20px;
+    padding: 5px 12px;
+    color: var(--text-color, #ffffff);
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+    touch-action: manipulation;
+}
+
+.header-user-badge-btn:active {
+    transform: scale(0.96);
+}
+
+.badge-avatar {
+    font-size: 1.1rem;
+    line-height: 1;
+}
+
+.badge-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    max-width: 80px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 2. Modal Overlay & Container */
+.settings-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background: var(--modal-overlay, rgba(0, 0, 0, 0.78));
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 2500;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.settings-modal-content {
+    background: var(--surface-bg, #181818);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 360px;
+    max-height: calc(88dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    color: var(--text-color, #ffffff);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.6);
+    overflow: hidden;
+}
+
+/* 3. Main Menu Flow List (Settings, Account, Help) */
+.menu-flow-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 10px 0 18px;
+}
+
+.menu-flow-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--surface-card, #202020);
+    border: 1px solid var(--border-color, #383838);
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: var(--text-color, #ffffff);
+    font-size: 1.15rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    touch-action: manipulation;
+}
+
+.menu-flow-item:hover, .menu-flow-item:active {
+    background: var(--input-bg, #2a2a2a);
+    border-color: var(--text-color, #ffffff);
+}
+
+.menu-item-arrow {
+    font-size: 1.4rem;
+    color: var(--text-muted, #888888);
+    line-height: 1;
+}
+
+/* Sub-header (Back Arrow + Title + Close) */
+.settings-sub-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-light, rgba(255, 255, 255, 0.1));
+    padding-bottom: 12px;
+    margin-bottom: 14px;
+    flex-shrink: 0;
+}
+
+.settings-sub-header h3 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.settings-back-btn {
+    background: none;
+    border: none;
+    color: var(--text-color, #ffffff);
+    font-size: 1.35rem;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+}
+
+.settings-close-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted, #888888);
+    font-size: 1.6rem;
+    cursor: pointer;
+    padding: 0 4px;
+    line-height: 1;
+}
+
+.settings-close-btn:hover {
+    color: var(--text-color, #ffffff);
+}
+
+.settings-modal-body {
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    padding-right: 2px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.settings-modal-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* 4. Settings Preferences Rows */
+.settings-pref-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--surface-card, #202020);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 12px;
+}
+
+.pref-label-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pref-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-color, #ffffff);
+}
+
+.pref-desc {
+    font-size: 0.75rem;
+    color: var(--text-muted, #888888);
+}
+
+/* Theme Switch Toggle Slider */
+.theme-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.theme-icon {
+    font-size: 1rem;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 26px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #444444;
+    transition: .3s;
+    border-radius: 26px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--accent-blue, #00a8ff);
+}
+
+input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+/* 5. Active Profile Card */
+.active-profile-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface-card, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-light, rgba(255, 255, 255, 0.12));
+    border-radius: 14px;
+    padding: 12px 14px;
+    flex-shrink: 0;
+}
+
+.profile-avatar-lg {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid var(--accent-blue, #00a8ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: var(--input-bg, rgba(255, 255, 255, 0.05));
+    flex-shrink: 0;
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.profile-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888888);
+}
+
+/* Section Headers */
+.settings-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.settings-section-header h4,
+.settings-section h4 {
+    margin: 0 0 8px 0;
+    font-size: 0.85rem;
+    color: var(--text-muted, #aaaaaa);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.new-profile-toggle-btn {
+    background: none;
+    border: none;
+    color: var(--accent-blue, #00a8ff);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Profiles List */
+.profiles-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.profile-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface-card, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+    border-radius: 10px;
+    padding: 8px 12px;
+    transition: background 0.15s;
+}
+
+.profile-list-item.active {
+    border-color: var(--accent-blue, #00a8ff);
+    background: rgba(0, 168, 255, 0.1);
+}
+
+.item-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+.item-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1.5px solid var(--accent-blue, #00a8ff);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.item-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.item-badge {
+    font-size: 0.7rem;
+    background: rgba(0, 168, 255, 0.2);
+    color: var(--accent-blue, #00a8ff);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-switch {
+    background: var(--input-bg, #242424);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    touch-action: manipulation;
+}
+
+.btn-switch:hover, .btn-switch:active {
+    background: var(--accent-blue, #00a8ff);
+    color: #ffffff;
+    border-color: var(--accent-blue, #00a8ff);
+}
+
+.btn-delete {
+    background: none;
+    border: none;
+    color: var(--text-muted, #666666);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 0 6px;
+    line-height: 1;
+}
+
+.btn-delete:hover {
+    color: var(--accent-red, #ff4757);
+}
+
+/* New Profile Form */
+.new-profile-form {
+    background: var(--surface-card, #202020);
+    border: 1px solid var(--border-color, #383838);
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.profile-input {
+    background: var(--input-bg, #141414);
+    border: 1px solid var(--input-border, #444444);
+    border-radius: 8px;
+    color: var(--text-color, #ffffff);
+    padding: 10px 12px;
+    font-size: 16px !important;
+    outline: none;
+    font-family: inherit;
+    width: 100%;
+}
+
+.picker-label {
+    font-size: 0.8rem;
+    color: var(--text-muted, #888888);
+}
+
+.avatar-picker-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.avatar-opt-btn {
+    width: 34px;
+    height: 34px;
+    border-radius: 8px;
+    background: var(--input-bg, #141414);
+    border: 1px solid var(--input-border, #383838);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.avatar-opt-btn.selected {
+    border-color: var(--text-color, #ffffff);
+    background: rgba(255, 255, 255, 0.15);
+}
+
+.color-picker-row {
+    display: flex;
+    gap: 8px;
+}
+
+.color-opt-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.color-opt-btn.selected {
+    border-color: var(--text-color, #ffffff);
+    transform: scale(1.15);
+}
+
+.new-profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.btn-primary {
+    background: var(--accent-blue, #00a8ff);
+    border: none;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.btn-secondary {
+    background: var(--input-bg, #2a2a2a);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* Backup & Restore */
+.backup-actions-row {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-backup {
+    flex: 1;
+    background: var(--input-bg, #242424);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    border-radius: 10px;
+    padding: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-status-msg {
+    margin-top: 8px;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
+/* 6. Help Sections */
+.help-section {
+    background: var(--surface-card, #202020);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 12px;
+    padding: 12px 14px;
+}
+
+.help-section h4 {
+    margin: 0 0 6px 0;
+    font-size: 1rem;
+    color: var(--text-color, #ffffff);
+}
+
+.help-section p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--text-muted, #888888);
+    line-height: 1.4;
+}

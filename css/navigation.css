@@ -1,34 +1,58 @@
+/* css/navigation.css - Bottom Navigation with iOS Home Bar Safe Area */
+
 .bottom-nav {
     position: fixed;
     bottom: 0;
     left: 0;
     width: 100%;
-    height: 80px;
-    background-color: var(--nav-bg, #1e1e1e);
-    border-top: 1px solid var(--border-color, #333);
+    height: calc(58px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background-color: var(--nav-bg, rgba(22, 22, 22, 0.92));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     display: flex;
     justify-content: space-around;
     align-items: center;
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .nav-item {
-    background: none;
+    background: transparent;
     border: none;
-    color: var(--nav-text-inactive, #888);
-    font-size: 0.9rem;
+    color: var(--nav-text-inactive, #777777);
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
     flex: 1;
-    height: 100%;
+    height: 58px;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
     transition: color 0.2s ease;
     touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+.nav-item span {
+    pointer-events: none;
 }
 
 .nav-item.active {
     color: var(--nav-text-active, #ffffff);
-    font-weight: bold;
-    border-top: 2px solid var(--accent-color, #4d4a4a);
+    font-weight: 600;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 25%;
+    right: 25%;
+    height: 2px;
+    background-color: #ffffff;
+    border-radius: 2px;
 }

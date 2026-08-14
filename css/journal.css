@@ -1,95 +1,125 @@
-/* 1. Trave o scroll global para eliminar qualquer barra de rolagem externa/fantasma */
-html, body {
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-}
+/* css/journal.css - Journal View & Lined Paper Styling for Mobile & iOS */
 
-/* 2. Wrapper principal da tela do Diário */
-.journal-wrapper {
-    display: flex;
+/* 1. Global View Lock */
+#journal-view {
+    display: none;
     flex-direction: column;
     width: 100%;
+    height: 100%;
     height: 100dvh;
     overflow: hidden;
+    background-color: var(--bg-color, #111111);
 }
 
-/* 3. Barra Superior FIXA no topo */
+#journal-view.active {
+    display: flex;
+}
+
+/* 2. Top Bar (Safely below status bar / notch) */
 .journal-top-bar {
     flex-shrink: 0;
     width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    padding: 26px 16px 14px;
+    padding: max(14px, calc(env(safe-area-inset-top, 0px) + 8px)) 16px 12px;
     box-sizing: border-box;
-    background-color: var(--bg-color, #111);
+    background-color: var(--bg-color, #111111);
     border-bottom: 1px solid var(--border-color, #2a2a2a);
     z-index: 10;
 }
 
 .journal-top-btn {
     padding: 6px 14px;
-    height: 34px;
-    font-size: 0.9rem;
+    height: 36px;
+    font-size: 0.95rem;
     font-weight: 500;
     background-color: var(--input-bg, #1e1e1e);
-    color: var(--text-color, #fff);
-    border: 1px solid var(--border-color, #444);
-    border-radius: 8px;
+    color: var(--text-color, #ffffff);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 10px;
     cursor: pointer;
+    touch-action: manipulation;
 }
 
-/* 4. Container de Scroll (Alargado de 2px para 0) */
+.journal-top-btn:active {
+    background-color: #333333;
+}
+
+.journal-options-btn {
+    background: transparent;
+    border: 1.5px solid var(--border-color, #555555);
+    border-radius: 10px;
+    color: var(--text-color, #ffffff);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    transition: border-color 0.2s;
+    touch-action: manipulation;
+}
+
+/* 3. Journal Scrolling Container */
 .journal-container {
-    padding: 25px 0px;
+    flex: 1;
+    padding: 16px 0 0 0;
     display: block;
     box-sizing: border-box;
     overflow-y: auto;
-    height: calc(100dvh - 120px);
+    overflow-x: hidden;
     width: 100%;
-
     scrollbar-width: none;
     -ms-overflow-style: none;
     -webkit-overflow-scrolling: touch;
 }
 
+.journal-container::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+}
+
 .journal-blocks-wrapper {
-    /* Reduz o padding lateral de 16px para 6px ou 8px para alargar os blocos */
-    padding: 10px 8px calc(80px + env(safe-area-inset-bottom)) 8px;
+    padding: 6px 10px calc(80px + env(safe-area-inset-bottom, 0px)) 10px;
     box-sizing: border-box;
 }
 
 .journal-day-block {
     margin-bottom: 24px;
-    margin-top: 10px;
-    scroll-margin-top: 20px;
+    margin-top: 6px;
+    scroll-margin-top: 16px;
 }
 
-/* 5. Caixa de texto com folha pautada e scroll invisível */
+.journal-date {
+    margin: 0 0 8px 4px;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+/* 4. Lined Paper Textarea */
 .journal-input {
     width: 100%;
-    height: 300px;
-    padding: 2px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color, #444);
-    background-color: var(--input-bg, #1e1e1e);
-    color: var(--text-color, #fff);
-    font-size: 1.2rem;
+    height: 280px;
+    padding: 4px 16px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color, #3a3a3a);
+    background-color: var(--input-bg, #1c1c1c);
+    color: var(--text-color, #ffffff);
+    font-size: 1.15rem; /* >= 16px prevents iOS zoom */
     resize: none;
     font-family: inherit;
     box-sizing: border-box;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 
     /* Lined paper setup */
     line-height: 33px;
-    background-image: linear-gradient(to bottom, transparent 32px, rgba(255, 255, 255, 0.12) 32px);
+    background-image: linear-gradient(to bottom, transparent 32px, rgba(255, 255, 255, 0.1) 32px);
     background-size: 100% 33px;
     background-position: 0 33px; 
     background-attachment: local;
 
-    /* Esconde a barra de rolagem da textarea */
     scrollbar-width: none;
     -ms-overflow-style: none;
 }
@@ -100,30 +130,41 @@ html, body {
     height: 0;
 }
 
-/* Modal Overlay */
+.journal-input:focus {
+    border-color: rgba(255, 255, 255, 0.35);
+    outline: none;
+}
+
+/* 5. Modal Overlay */
 .journal-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 1000;
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    background-color: rgba(0, 0, 0, 0.78);
+    z-index: 2000;
     display: flex;
     justify-content: center;
     align-items: center;
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 16px;
+    box-sizing: border-box;
 }
 
 .journal-modal-content {
-    background-color: var(--bg-color, #1a1a1a);
-    border: 1px solid var(--border-color, #333);
-    border-radius: 16px;
-    width: 90%;
+    background-color: var(--surface-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 20px;
+    width: 100%;
     max-width: 360px;
+    max-height: calc(85dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
     padding: 20px;
     box-sizing: border-box;
-    color: var(--text-color, #fff);
+    color: var(--text-color, #ffffff);
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
 }
 
 .journal-modal-header {
@@ -135,20 +176,21 @@ html, body {
 
 .journal-modal-header h3 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     font-weight: 600;
 }
 
 .journal-close-btn {
     background: none;
     border: none;
-    color: var(--text-color, #aaa);
-    font-size: 1.5rem;
+    color: var(--text-muted, #888888);
+    font-size: 1.6rem;
     cursor: pointer;
-    padding: 0;
+    padding: 0 4px;
+    line-height: 1;
 }
 
-/* Grade de Meses (3 colunas) */
+/* Months Grid (3 columns) */
 .journal-months-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -157,17 +199,19 @@ html, body {
 
 .journal-month-btn {
     padding: 14px 8px;
-    background-color: var(--input-bg, #262626);
-    color: var(--text-color, #fff);
-    border: 1px solid var(--border-color, #444);
-    border-radius: 10px;
-    font-size: 0.95rem;
+    background-color: var(--input-bg, #242424);
+    color: var(--text-color, #ffffff);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 12px;
+    font-size: 1rem;
     font-weight: 500;
     cursor: pointer;
     text-align: center;
-    transition: background-color 0.2s;
+    transition: background-color 0.15s;
+    touch-action: manipulation;
 }
 
 .journal-month-btn:active {
-    background-color: var(--border-color, #444);
+    background-color: #383838;
+    border-color: #ffffff;
 }

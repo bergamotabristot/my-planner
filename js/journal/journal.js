@@ -1,9 +1,19 @@
+// js/journal/journal.js
+// Fixed & Modular Journal View with debounced user-scoped persistence and DST-safe navigation
+
+import { getJournalEntry, saveJournalEntry } from '../database/journal.js';
+import { subscribeUserChange } from '../database/database.js';
+import { formatDateKey, getCalendarDayDiff, MONTH_NAMES_SHORT } from '../utils/dates.js';
+import { debounce } from '../utils/helpers.js';
+import { openGlobalMenu } from '../settings/settings.js';
+
 let todayBlockRef = null;
 const allDayBlocks = new Map();
 let blocksWrapperGlobal = null;
 let journalContainerGlobal = null;
+let isInitialized = false;
 
-// Rola APENAS o container interno do diário
+// Scroll internal journal container to target block
 function scrollBlockToTop(container, block) {
     if (!container || !block) return;
     const containerTop = container.getBoundingClientRect().top;
@@ -28,15 +38,25 @@ export function scrollToToday(smooth = true) {
     }
 }
 
-// Garante que o intervalo entre o offset atual e o offset desejado exista no DOM
+// Reload all rendered day textareas when active user switches
+export function reloadJournalContent() {
+    allDayBlocks.forEach((dayWrapper) => {
+        const textarea = dayWrapper.querySelector('.journal-input');
+        if (textarea && textarea.dataset.date) {
+            textarea.value = getJournalEntry(textarea.dataset.date);
+        }
+    });
+}
+
+// Ensure the range between current offsets and target offset exists in the DOM
 function ensureRangeExists(targetOffset) {
     const currentOffsets = Array.from(allDayBlocks.keys());
     if (currentOffsets.length === 0) return;
 
-    let minOffset = Math.min(...currentOffsets);
-    let maxOffset = Math.max(...currentOffsets);
+    const minOffset = Math.min(...currentOffsets);
+    const maxOffset = Math.max(...currentOffsets);
 
-    // Se o alvo está no passado mais distante que o carregado
+    // Target is further in the past
     if (targetOffset > maxOffset) {
         for (let i = maxOffset + 1; i <= targetOffset; i++) {
             if (!allDayBlocks.has(i)) {
@@ -45,7 +65,7 @@ function ensureRangeExists(targetOffset) {
             }
         }
     }
-    // Se o alvo está no futuro mais distante que o carregado
+    // Target is further in the future
     else if (targetOffset < minOffset) {
         for (let i = minOffset - 1; i >= targetOffset; i--) {
             if (!allDayBlocks.has(i)) {
@@ -59,10 +79,9 @@ function ensureRangeExists(targetOffset) {
 function scrollToDayOffset(targetOffset) {
     if (!journalContainerGlobal) return;
 
-    // Garante que os blocos até a data desejada sejam criados instantaneamente
     ensureRangeExists(targetOffset);
 
-    let block = allDayBlocks.get(targetOffset);
+    const block = allDayBlocks.get(targetOffset);
     if (block) {
         setTimeout(() => {
             scrollBlockToTop(journalContainerGlobal, block);
@@ -78,7 +97,7 @@ function createDayBlock(dayOffset) {
     const month = String(targetDate.getMonth() + 1).padStart(2, '0');
     const dateString = `${day}/${month}/${targetDate.getFullYear()}`;
     const shortDateString = `${day}/${month}`;
-    const dateKey = targetDate.toISOString().split('T')[0];
+    const dateKey = formatDateKey(targetDate);
 
     const dayWrapper = document.createElement('div');
     dayWrapper.className = 'journal-day-block';
@@ -91,18 +110,21 @@ function createDayBlock(dayOffset) {
     const journalInput = document.createElement('textarea');
     journalInput.className = 'journal-input';
     journalInput.dataset.date = dateKey;
-    journalInput.lang = 'pt-BR';
     journalInput.placeholder = dayOffset === 0 ? "Write your thoughts for today..." : `Journal for ${dateString}...`;
 
-    const savedContent = localStorage.getItem(`journal_${dateKey}`);
-    if (savedContent) {
-        journalInput.value = savedContent;
-    }
+    // Load entry from user-scoped database
+    journalInput.value = getJournalEntry(dateKey);
+
+    // Debounced save for fast and smooth typing
+    const debouncedSave = debounce((val) => {
+        saveJournalEntry(dateKey, val);
+    }, 250);
 
     journalInput.addEventListener('input', () => {
-        localStorage.setItem(`journal_${dateKey}`, journalInput.value);
+        debouncedSave(journalInput.value);
     });
 
+    // Touch & mobile focus helpers
     let startY = 0;
     let isScrolling = false;
 
@@ -122,10 +144,7 @@ function createDayBlock(dayOffset) {
         if (!isScrolling && document.activeElement !== journalInput) {
             e.preventDefault();
             scrollBlockToTop(journalContainerGlobal, dayWrapper);
-
-            setTimeout(() => {
-                journalInput.focus();
-            }, 200);
+            setTimeout(() => journalInput.focus(), 200);
         }
     });
 
@@ -168,14 +187,23 @@ export function initJournal() {
 
     const actionBtn = document.createElement('button');
     actionBtn.className = 'journal-top-btn';
-    actionBtn.textContent = 'Months'; 
+    actionBtn.innerHTML = '← Months'; 
     
     actionBtn.addEventListener('click', () => {
         const modal = document.getElementById('journalYearModal');
         if (modal) modal.style.display = 'flex';
     });
 
+    const optionsBtn = document.createElement('button');
+    optionsBtn.className = 'journal-options-btn';
+    optionsBtn.innerHTML = '•••';
+    optionsBtn.title = 'Settings / More';
+    optionsBtn.addEventListener('click', () => {
+        openGlobalMenu('menu');
+    });
+
     topBar.appendChild(actionBtn);
+    topBar.appendChild(optionsBtn);
     journalView.insertBefore(topBar, journalContainerGlobal);
 
     setupYearModal();
@@ -184,7 +212,7 @@ export function initJournal() {
     blocksWrapperGlobal.className = 'journal-blocks-wrapper';
     journalContainerGlobal.appendChild(blocksWrapperGlobal);
 
-    // Inicializa com um range leve (30 dias no passado e 30 no futuro) para carregar instantaneamente sem lag
+    // Initial range of days
     const INITIAL_RANGE = 30;
     const fragment = document.createDocumentFragment();
 
@@ -199,14 +227,14 @@ export function initJournal() {
         scrollToToday(false);
     });
 
-    // Scroll Infinito Dinâmico (Carrega mais blocos levemente conforme o usuário rola)
+    // Infinite scroll listener
     let isFetching = false;
     journalContainerGlobal.addEventListener('scroll', () => {
         if (isFetching) return;
 
         const { scrollTop, scrollHeight, clientHeight } = journalContainerGlobal;
 
-        // Perto do topo -> Carrega mais 30 dias para o passado
+        // Past scroll
         if (scrollTop < 200) {
             isFetching = true;
             const currentOldest = Math.max(...allDayBlocks.keys());
@@ -224,7 +252,7 @@ export function initJournal() {
             setTimeout(() => { isFetching = false; }, 50);
         }
 
-        // Perto do fundo -> Carrega mais 30 dias para o futuro
+        // Future scroll
         if (scrollTop + clientHeight >= scrollHeight - 200) {
             isFetching = true;
             const currentNewest = Math.min(...allDayBlocks.keys());
@@ -240,6 +268,14 @@ export function initJournal() {
             setTimeout(() => { isFetching = false; }, 50);
         }
     });
+
+    // Subscribe to multi-user profile switch
+    if (!isInitialized) {
+        subscribeUserChange(() => {
+            reloadJournalContent();
+        });
+        isInitialized = true;
+    }
 }
 
 function setupYearModal() {
@@ -294,9 +330,8 @@ function setupYearModal() {
 
     function renderMonths() {
         monthsGrid.innerHTML = '';
-        const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
-        monthNames.forEach((name, index) => {
+        MONTH_NAMES_SHORT.forEach((name, index) => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'journal-month-btn';
@@ -309,11 +344,8 @@ function setupYearModal() {
                 const today = new Date();
                 today.setHours(0, 0, 0, 0);
 
-                const targetDate = new Date(selectedYear, index, 1);
-                targetDate.setHours(0, 0, 0, 0);
-
-                const diffTime = today - targetDate;
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+                const targetDate = new Date(selectedYear, index, 1, 0, 0, 0, 0);
+                const diffDays = getCalendarDayDiff(targetDate, today);
 
                 scrollToDayOffset(diffDays);
             });
@@ -324,18 +356,6 @@ function setupYearModal() {
 
     renderMonths();
 
-    const actionBtn = document.querySelector('.journal-top-btn');
-    if (actionBtn && !actionBtn.dataset.listenerAttached) {
-        actionBtn.dataset.listenerAttached = 'true';
-        actionBtn.addEventListener('click', () => {
-            selectedYear = new Date().getFullYear();
-            const yearTitle = modal.querySelector('.journal-year-title');
-            if (yearTitle) yearTitle.textContent = selectedYear;
-            renderMonths();
-            modal.style.display = 'flex';
-        });
-    }
-
     if (closeBtn) {
         closeBtn.onclick = (e) => {
             e.stopPropagation();
@@ -343,9 +363,9 @@ function setupYearModal() {
         };
     }
 
-    window.onclick = (event) => {
-        if (event.target === modal) {
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
             modal.style.display = 'none';
         }
-    };
+    });
 }

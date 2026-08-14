@@ -1,31 +1,52 @@
+/* css/habits.css - Habits Tab & Sleep Tracker Mobile/iOS Styling */
+
+#habits-view {
+    display: none;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    box-sizing: border-box;
+    overflow: hidden;
+    color: var(--text-color, #ffffff);
+    background-color: var(--bg-color, #111111);
+}
+
+#habits-view.active {
+    display: flex;
+}
+
 .habits-top-bar {
     display: flex;
-    justify-content: center;
-    padding: 30px 0;
+    justify-content: space-between;
+    align-items: center;
+    padding: max(14px, calc(env(safe-area-inset-top, 0px) + 8px)) 16px 8px;
     position: relative;
+    flex-shrink: 0;
 }
 
 .habits-dropdown-container {
     position: relative;
     display: inline-block;
     text-align: center;
+    margin: 0 auto;
 }
 
-/* Turns the trigger into clean text with an underlined section */
+/* Dynamic dropdown trigger */
 .habits-dropdown-btn {
     background: transparent;
     border: none;
-    color: var(--text-color, #fff);
-    font-size: 1.6rem;
+    color: var(--text-color, #ffffff);
+    font-size: 1.45rem;
     font-weight: 500;
     cursor: pointer;
     display: flex;
     align-items: center;
     gap: 6px;
     padding: 0;
+    touch-action: manipulation;
 }
 
-/* Underlines just the dynamic word (like "Week" or "Month") */
 .habits-dropdown-btn .clickable-text {
     text-decoration: underline;
     text-underline-offset: 4px;
@@ -33,63 +54,81 @@
 
 .habits-dropdown-btn .arrow {
     font-size: 0.8rem;
-    color: var(--text-color, #888);
+    color: var(--text-muted, #888888);
 }
 
-/* The popup menu */
+.habits-options-btn {
+    background: transparent;
+    border: 1.5px solid var(--border-color, #555555);
+    border-radius: 10px;
+    color: var(--text-color, #ffffff);
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    letter-spacing: 2px;
+    transition: border-color 0.2s;
+    touch-action: manipulation;
+}
+
+/* Dropdown menu */
 .habits-dropdown-menu {
     position: absolute;
     top: 120%;
     left: 50%;
     transform: translateX(-50%);
-    background-color: var(--bg-color, #1a1a1a);
-    border: 1px solid var(--border-color, #333);
-    border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+    background-color: var(--surface-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.6);
     z-index: 100;
     display: flex;
     flex-direction: column;
-    min-width: 110px;
+    min-width: 120px;
     overflow: hidden;
 }
 
 .habits-option {
     background: transparent;
-    color: var(--text-color, #fff);
+    color: var(--text-color, #ffffff);
     border: none;
-    padding: 10px 16px;
+    padding: 12px 16px;
     text-align: center;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     cursor: pointer;
     width: 100%;
+    touch-action: manipulation;
 }
 
-.habits-option:hover {
+.habits-option:hover, .habits-option:active {
     background-color: var(--input-bg, #2a2a2a);
 }
 
+/* Date Navigator Sub-Bar */
 .habits-date-nav {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 12px;
-    margin-bottom: 20px;
-    color: var(--text-color, #fff);
-    font-size: 0.95rem;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: var(--text-color, #ffffff);
+    font-size: 1.05rem;
+    font-weight: 500;
+    flex-shrink: 0;
 }
 
 .habits-date-arrow {
     background: transparent;
     border: none;
-    color: var(--text-color, #888);
-    font-size: 1rem;
+    color: var(--text-muted, #888888);
+    font-size: 1.3rem;
     cursor: pointer;
-    padding: 2px 6px;
+    padding: 2px 10px;
     transition: color 0.2s;
+    touch-action: manipulation;
 }
 
-.habits-date-arrow:hover {
-    color: var(--text-color, #fff);
+.habits-date-arrow:active {
+    color: var(--text-color, #ffffff);
 }
 
 .habits-date-label {
@@ -98,121 +137,331 @@
     letter-spacing: 0.5px;
 }
 
-.habits-date-label:hover {
-    text-decoration: underline;
+/* Sub-views scrollable container */
+.habits-sub-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0 14px calc(75px + env(safe-area-inset-bottom, 0px)) 14px;
+    box-sizing: border-box;
 }
 
+.habits-sub-view::-webkit-scrollbar {
+    display: none;
+}
+
+/* Month and Year views scroll normally (no flex child pinning) */
+#habits-month,
+#habits-year {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+/* ==========================================================================
+   WEEK TABLE & TODAY COLUMN OUTLINE
+   ========================================================================== */
 .habits-table-container {
     width: 100%;
+    flex: 1;
+    overflow-y: auto;
     overflow-x: auto;
-    margin-bottom: 25px;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 0;
+    position: relative;
+    min-height: 0;
+    scrollbar-width: none;
+}
+
+.habits-table-container::-webkit-scrollbar {
+    display: none;
 }
 
 .habits-table {
     width: 100%;
     border-collapse: collapse;
     text-align: center;
-    color: var(--text-color, #fff);
+    color: var(--text-color, #ffffff);
     font-size: 0.9rem;
 }
 
 .habits-table th, 
 .habits-table td {
-    padding: 8px 4px;
-    border: 1px solid var(--border-color, #333);
+    padding: 10px 4px;
+    border: 1px solid var(--border-color, #333333);
+}
+
+/* Today Column Highlight */
+.habits-table th.today-col-header {
+    border-left: 2px solid var(--today-col-highlight, #ff6b81) !important;
+    border-right: 2px solid var(--today-col-highlight, #ff6b81) !important;
+    border-top: 2px solid var(--today-col-highlight, #ff6b81) !important;
+    color: var(--today-col-highlight, #ff6b81);
+    font-weight: bold;
+    background: rgba(255, 107, 129, 0.08);
+}
+
+.habits-table td.today-col-cell {
+    border-left: 2px solid var(--today-col-highlight, #ff6b81) !important;
+    border-right: 2px solid var(--today-col-highlight, #ff6b81) !important;
+    background: rgba(255, 107, 129, 0.05);
+}
+
+.habits-table tr:last-child td.today-col-cell {
+    border-bottom: 2px solid var(--today-col-highlight, #ff6b81) !important;
 }
 
 .habit-name-cell {
     text-align: left;
-    padding-left: 10px;
+    padding-left: 10px !important;
     font-weight: 500;
-    white-space: nowrap;
-    width: 35%;
+    width: 38%;
+    min-width: 110px;
+}
+
+.habit-name-label {
+    cursor: pointer;
+    display: inline-block;
+    transition: opacity 0.15s;
+}
+
+.habit-name-label:hover {
+    text-decoration: underline;
+    opacity: 0.9;
 }
 
 .habit-cell {
     cursor: pointer;
     user-select: none;
     font-weight: bold;
+    touch-action: manipulation;
+    font-size: 1.1rem;
 }
 
 .habit-cell.checked {
-    color: #4cd137;
+    color: var(--accent-green, #4cd137);
 }
 
 .habit-cell.unchecked {
-    color: #e84118;
+    color: var(--accent-red, #e84118);
 }
 
 .habit-cell.dash {
-    color: #fbc531;
+    color: var(--accent-yellow, #fbc531);
+}
+
+.habit-cell.skipped {
+    color: var(--text-muted, #666666);
+    font-size: 1.2rem;
 }
 
 .habit-score-cell {
-    font-size: 0.85rem;
-    color: var(--text-muted, #888);
+    font-size: 0.8rem;
+    color: var(--text-muted, #888888);
 }
 
-.sleep-section {
-    margin-top: 25px;
-    padding: 15px;
-    border-top: 1px solid #333;
+.add-habit-trigger-btn {
+    background: transparent;
+    border: 1px dashed var(--border-color, #444444);
+    color: var(--text-muted, #888888);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all 0.15s;
+}
+
+.add-habit-trigger-btn:hover {
+    border-color: var(--text-color, #ffffff);
+    color: var(--text-color, #ffffff);
+}
+
+/* ==========================================================================
+   HABIT EDIT MODAL
+   ========================================================================== */
+.habit-modal-content {
+    background: var(--surface-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #333333);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 340px;
+    padding: 22px;
+    box-sizing: border-box;
+    color: var(--text-color, #ffffff);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+}
+
+.habit-modal-title-input {
+    width: 100%;
+    background: var(--input-bg, #242424);
+    border: 1px solid var(--input-border, #444444);
+    border-radius: 10px;
+    color: var(--text-color, #ffffff);
+    font-size: 16px !important;
+    padding: 10px 14px;
+    outline: none;
+    font-family: inherit;
+    box-sizing: border-box;
+}
+
+.habit-modal-title-input:focus {
+    border-color: var(--text-color, #ffffff);
+}
+
+.habit-skip-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+}
+
+.skip-label {
+    font-size: 1.05rem;
+    color: var(--text-muted, #888888);
+    font-style: italic;
+}
+
+.skip-trigger-btn {
+    background: var(--input-bg, #242424);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    border-radius: 10px;
+    padding: 6px 14px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.skip-options-card {
+    background: var(--surface-card, #222222);
+    border: 1px solid var(--border-color, #383838);
+    border-radius: 12px;
+    padding: 10px;
+}
+
+.skip-days-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.skip-day-btn {
+    background: transparent;
+    border: 1px solid var(--border-color, #444444);
+    color: var(--text-muted, #cccccc);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
     text-align: center;
+    transition: all 0.15s;
+    touch-action: manipulation;
+}
+
+.skip-day-btn.selected {
+    background: var(--accent-red, #ff4757);
+    color: #ffffff;
+    font-weight: bold;
+    border-color: var(--accent-red, #ff4757);
+}
+
+.habit-modal-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.habit-modal-actions-right {
+    display: flex;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.habit-btn-cancel {
+    background: var(--input-bg, #2a2a2a);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.habit-btn-done {
+    background: var(--accent-blue, #00a8ff);
+    border: none;
+    color: #ffffff;
+    border-radius: 10px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+/* ==========================================================================
+   SLEEP SECTION & INTERACTIVE CHART
+   ========================================================================== */
+.sleep-section {
+    flex-shrink: 0;
+    margin-top: 10px;
+    padding: 12px 0 20px;
+    border-top: 1px solid var(--border-color, #333333);
+    text-align: center;
+}
+
+.sleep-section h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
 }
 
 .sleep-chart-container {
     display: flex;
     height: 160px;
     position: relative;
-    margin-top: 25px;
-    margin-bottom: 25px;
-    margin-left: 35px;
-    margin-right: 35px; /* Added right margin to make space for the label */
+    margin: 25px 35px 20px 35px;
     padding: 0;
-    border-left: 1px solid #555;
-    border-bottom: 1px solid #555;
+    border-left: 1px solid #555555;
+    border-bottom: 1px solid #555555;
     touch-action: none;
     box-sizing: border-box;
+    cursor: ns-resize;
+    user-select: none;
 }
 
 /* Y-Axes Labels */
-.sleep-axis-label {
-    position: absolute;
-    top: -25px;
-    font-size: 0.8rem;
-    font-weight: bold;
-}
 .sleep-axis-label.time { 
     position: absolute;
     left: -35px;
     top: -22px;
-    color: #00a8ff;
-    font-size: 0.8rem;
+    color: var(--accent-blue, #00a8ff);
+    font-size: 0.75rem;
     font-weight: bold;
     text-align: right;
     width: 30px;
 }
+
 .sleep-axis-label.quality { 
     position: absolute;
     right: -35px;
     top: -22px;
-    color: #fbc531;
-    font-size: 0.8rem;
+    color: var(--accent-yellow, #fbc531);
+    font-size: 0.75rem;
     font-weight: bold;
     text-align: left;
     width: 30px;
 }
 
-.sleep-y-axis {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    width: 25px;
-}
 .sleep-y-axis.left-axis {
     position: absolute;
     left: -35px;
@@ -223,7 +472,10 @@
     justify-content: space-between;
     align-items: flex-end;
     width: 30px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #888888);
 }
+
 .sleep-y-axis.right-axis {
     position: absolute;
     right: -35px;
@@ -234,6 +486,8 @@
     justify-content: space-between;
     align-items: flex-start;
     width: 30px;
+    font-size: 0.75rem;
+    color: var(--text-muted, #888888);
 }
 
 /* Grid Columns */
@@ -260,16 +514,14 @@
 
 /* Quality Yellow Bars */
 .sleep-bar {
-    width: 16px;
+    width: 14px;
     background-color: transparent;
-    border: 2px solid #fbc531;
+    border: 2px solid var(--accent-yellow, #fbc531);
     border-bottom: none;
     border-radius: 2px 2px 0 0;
-    cursor: pointer;
     box-sizing: border-box;
-    transition: opacity 0.2s;
 }
-.sleep-bar:hover { opacity: 0.8; }
+
 .sleep-line-svg {
     position: absolute;
     top: 0;
@@ -283,105 +535,143 @@
 
 .sleep-line {
     fill: none;
-    stroke: #00a8ff;
-    stroke-width: 2.5px;
+    stroke: var(--accent-blue, #00a8ff);
+    stroke-width: 3px;
     stroke-linecap: round;
     stroke-linejoin: round;
-}
-
-/* Time Points */
-.sleep-time-dot {
-    width: 8px;
-    height: 8px;
-    background-color: #00a8ff;
-    border-radius: 50%;
-    position: absolute;
-    transform: translate(-50%, 50%);
-    z-index: 4;
-    pointer-events: none;
-}
-
-.sleep-active-slider {
-    position: absolute;
-    bottom: 0;
-    width: 2px;
-    height: 100%;
-    background-color: rgba(0, 168, 255, 0.4);
-    left: 50%;
-    transform: translateX(-50%); /* Centers the slider line precisely in the column */
-    z-index: 4;
-    pointer-events: none;
-}
-
-.sleep-active-handle {
-    width: 14px;
-    height: 14px;
-    background-color: #00a8ff;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    position: absolute;
-    left: 50%;
-    transform: translate(-50%, 50%); /* Centers the handle horizontally on the column */
-    box-shadow: 0 0 6px rgba(253, 253, 253, 0.6);
-    z-index: 5;
-    cursor: ns-resize;
 }
 
 .sleep-day-label {
     position: absolute;
     bottom: -22px;
     font-size: 0.8rem;
-    color: #aaa;
+    color: var(--text-muted, #888888);
 }
 
 .sleep-stats {
     display: flex;
     justify-content: space-around;
     font-size: 0.85rem;
-    color: #aaa;
+    color: var(--text-muted, #aaaaaa);
     margin-top: 15px;
 }
 
-/* Modal Popup Overlay */
-.sleep-modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: rgba(0, 0, 0, 0.8);
+/* Sleep Quality & Hours Modal */
+.sleep-modal-content {
+    background-color: var(--surface-bg, #1e1e1e);
+    padding: 22px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7);
+    max-width: 340px;
+    width: 90%;
+    border: 1px solid var(--border-color, #333333);
     display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 99999;
+    flex-direction: column;
+    gap: 16px;
 }
 
-.sleep-modal-content {
-    background-color: #1e1e1e;
-    padding: 24px;
+.sleep-modal-content h4 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+.sleep-modal-section {
+    background: var(--surface-card, #242424);
+    border: 1px solid var(--border-color, #383838);
     border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    max-width: 320px;
-    width: 85%;
-    border: 1px solid #333;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.sleep-modal-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--text-muted, #aaaaaa);
+}
+
+.sleep-hours-val-highlight {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--accent-blue, #00a8ff);
+}
+
+.sleep-slider-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.sleep-step-btn {
+    background: var(--input-bg, #1a1a1a);
+    border: 1px solid var(--input-border, #444444);
+    color: var(--text-color, #ffffff);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    font-weight: 600;
+    touch-action: manipulation;
+}
+
+.sleep-step-btn:active {
+    background: var(--accent-blue, #00a8ff);
+}
+
+.sleep-hours-slider {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    background: #444444;
+    outline: none;
+}
+
+.sleep-hours-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-blue, #00a8ff);
+    cursor: pointer;
+    border: 2px solid #ffffff;
+}
+
+.sleep-hours-slider::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--accent-blue, #00a8ff);
+    cursor: pointer;
+    border: 2px solid #ffffff;
 }
 
 .sleep-star-picker {
     display: flex;
     justify-content: center;
-    gap: 10px;
-    margin: 15px 0;
+    gap: 12px;
     cursor: pointer;
 }
 
 .sleep-star-picker span {
-    font-size: 1.8rem;
-    color: #555;
+    font-size: 2.1rem;
+    color: #444444;
     user-select: none;
+    touch-action: manipulation;
+    transition: color 0.15s, transform 0.15s;
 }
 
-.sleep-star-picker span.active { color: #fbc531; }
+.sleep-star-picker span.active { 
+    color: var(--accent-yellow, #fbc531); 
+    transform: scale(1.08);
+}
 
 .sleep-modal-btn-row {
     display: flex;
@@ -391,131 +681,175 @@
 .sleep-modal-btn-row button {
     flex: 1;
     padding: 10px;
-    border-radius: 6px;
+    border-radius: 10px;
     border: none;
     font-weight: 600;
     cursor: pointer;
+    font-size: 0.9rem;
+    touch-action: manipulation;
 }
 
-.sleep-confirm-btn { background-color: #00a8ff; color: #fff; }
-.sleep-cancel-btn { background-color: #444; color: #fff; }
-.sleep-y-axis.left-axis {
-    position: absolute;
-    left: -35px; /* Adjust as needed so it sits completely outside the left border */
-    top: 0;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: flex-end;
-}
+.sleep-confirm-btn { background-color: var(--accent-blue, #00a8ff); color: #ffffff; }
+.sleep-cancel-btn { background-color: var(--input-bg, #383838); color: var(--text-color, #ffffff); }
 
+/* ==========================================================================
+   MONTH VIEW
+   ========================================================================== */
 .habits-month-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
-    padding: 10px 0;
-    max-height: calc(100vh - 250px);
-    overflow-y: auto;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 14px;
+    padding: 6px 0;
 }
 
 .habit-month-card {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    padding: 15px;
+    background: var(--surface-card, rgba(255, 255, 255, 0.03));
+    border: 1px solid var(--border-light, rgba(255, 255, 255, 0.08));
+    border-radius: 14px;
+    padding: 12px 14px;
 }
 
 .habit-month-card h4 {
-    margin-bottom: 10px;
-    font-size: 1rem;
+    margin: 0 0 10px 0;
+    font-size: 1.05rem;
     font-weight: 500;
+    cursor: pointer;
+}
+
+.habit-month-card h4:hover {
+    text-decoration: underline;
+}
+
+.habit-month-card.add-card {
+    border-style: dashed;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100px;
+    cursor: pointer;
+}
+
+.add-habit-card-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #888888);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
 }
 
 .habit-month-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    gap: 4px;
 }
 
-.habit-month-cell {
-    aspect-ratio: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: background 0.2s;
-}
-
-.habit-month-cell.checked {
-    background: var(--accent-color, #00bfff);
-    color: #fff;
-    border-color: transparent;
-}
-
-.habit-month-cell.dash {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: transparent;
-}
-
-/* Year view container */
-/* Year view container */
+/* ==========================================================================
+   YEAR VIEW (Large 2-Row Stacked Grid per Month)
+   ========================================================================== */
 #habits-year {
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    padding: 10px 10px 120px 10px;
-    color: #fff;
-    font-size: 1rem;
+    gap: 12px;
+    color: var(--text-color, #ffffff);
+    font-size: 0.95rem;
     box-sizing: border-box;
 }
 
-/* Summary stats block */
 .habit-year-summary {
     text-align: center;
-    font-size: 1.3rem;
+    font-size: 1.35rem;
     font-weight: bold;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
-/* Habit selector header with arrows */
 .habit-year-nav-header {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    position: relative;
+    gap: 16px;
+    margin-bottom: 12px;
 }
 
+.habit-year-arrow {
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #888888);
+    font-size: 1.3rem;
+    cursor: pointer;
+    padding: 4px 10px;
+    touch-action: manipulation;
+}
+
+.habit-year-arrow:active {
+    color: var(--text-color, #ffffff);
+}
+
+.habit-year-title-select {
+    font-size: 1.15rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 1px dashed var(--border-color, #555555);
+    padding-bottom: 2px;
+}
+
+.habit-year-dropdown-popup {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--surface-bg, #1a1a1a);
+    border: 1px solid var(--border-color, #444444);
+    border-radius: 12px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+    overflow: hidden;
+}
+
+.habit-year-dropdown-opt {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.habit-year-dropdown-opt:hover, .habit-year-dropdown-opt.selected {
+    background: var(--input-bg, #2a2a2a);
+    color: var(--accent-blue, #00a8ff);
+    font-weight: 600;
+}
+
+/* Month Row with 2 Stacked Rows of Large Squares */
 .habit-year-row {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.8rem;
+    gap: 8px;
     margin-bottom: 10px;
     width: 100%;
     box-sizing: border-box;
+    background: var(--surface-card, rgba(255, 255, 255, 0.02));
+    border: 1px solid var(--border-light, rgba(255, 255, 255, 0.06));
+    border-radius: 10px;
+    padding: 6px 8px;
 }
 
 .habit-year-month-label {
-    width: 28px;
-    text-align: right;
-    color: #aaa;
-    font-size: 0.75rem;
-    font-weight: 500;
+    width: 32px;
+    text-align: center;
+    color: var(--text-color, #ffffff);
+    font-size: 0.85rem;
+    font-weight: 600;
     flex-shrink: 0;
 }
 
+/* 2-row grid: 16 columns per row */
 .habit-year-month-grid {
     display: grid;
-    /* Automatically wraps and adjusts columns when the screen gets thinner */
-    grid-template-columns: repeat(auto-fit, minmax(12px, 1fr));
-    gap: 2px;
+    grid-template-columns: repeat(16, 1fr);
+    gap: 3px;
     flex-grow: 1;
     min-width: 0;
 }
@@ -523,22 +857,27 @@
 .habit-year-day-box {
     width: 100%;
     aspect-ratio: 1;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 2px;
-    font-size: 8px;
+    background: var(--input-bg, rgba(255, 255, 255, 0.05));
+    border: 1px solid var(--border-color, rgba(255, 255, 255, 0.12));
+    border-radius: 4px;
+    font-size: 10px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     box-sizing: border-box;
-    overflow: hidden;
+    touch-action: manipulation;
+    transition: transform 0.1s, background-color 0.15s;
+}
+
+.habit-year-day-box:active {
+    transform: scale(0.9);
 }
 
 .habit-year-day-box.checked {
-    background: #00bfff;
-    border-color: #00bfff;
-    color: #000;
+    background: var(--accent-blue, #00bfff);
+    border-color: var(--accent-blue, #00bfff);
+    color: #000000;
     font-weight: bold;
 }
 
@@ -547,29 +886,11 @@
 }
 
 .habit-year-month-stats {
-    width: 65px;
+    width: 55px;
     text-align: right;
-    font-size: 0.75rem;
-    color: #aaa;
+    font-size: 0.72rem;
+    color: var(--text-muted, #888888);
     flex-shrink: 0;
-}
-
-.habit-year-dropdown-item {
-    padding: 8px 12px;
-    cursor: pointer;
-}
-
-.habit-year-dropdown-item:hover,
-.habit-year-dropdown-item.selected {
-    background: rgba(255, 255, 255, 0.1);
-}
-
-/* Ensure the overall habits sub-view container allows vertical scrolling */
-.habits-sub-view {
-    height: calc(100vh - 160px);
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 120px;
-    box-sizing: border-box;
+    white-space: pre-line;
+    line-height: 1.2;
 }
