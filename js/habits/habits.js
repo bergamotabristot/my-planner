@@ -79,7 +79,11 @@ export function initHabits() {
     options.forEach(option => {
         option.onclick = () => {
             const targetId = option.getAttribute('data-target');
-            currentMode = option.textContent.trim().toLowerCase();
+            
+            // Fixed mode mapping to prevent string mismatch issues
+            if (targetId === 'habits-week') currentMode = 'week';
+            else if (targetId === 'habits-month') currentMode = 'month';
+            else if (targetId === 'habits-year') currentMode = 'year';
 
             if (clickableText) clickableText.textContent = option.textContent;
             if (dropdownMenu) dropdownMenu.style.display = 'none';
@@ -178,28 +182,47 @@ export function renderHabitsTable() {
 
     const habits = getHabits();
     const now = new Date();
+
     const currentWeekKey = getWeekKey(currentDate);
     const liveWeekKey = getWeekKey(now);
 
     let todayDayIndex = -1;
+
     if (currentWeekKey === liveWeekKey) {
         const jsDay = now.getDay();
-        todayDayIndex = (jsDay === 0 ? 6 : jsDay - 1); // 0 = Mon, 6 = Sun
+        todayDayIndex = (jsDay === 0 ? 6 : jsDay - 1);
+    } else {
+        const startTarget = getStartOfWeek(currentDate);
+        const startLive = getStartOfWeek(now);
+
+        // Future week
+        if (startTarget > startLive) {
+            todayDayIndex = -1;
+        } 
+        // Past week
+        else {
+            todayDayIndex = 6;
+        }
     }
 
-    // Set today column highlight on table thead headers
+    // Set today column highlight
     const headers = document.querySelectorAll('.habits-table thead th');
+
     headers.forEach((th, idx) => {
         const dayIdx = idx - 1;
+
         if (dayIdx >= 0 && dayIdx < 7) {
-            th.classList.toggle('today-col-header', dayIdx === todayDayIndex);
+            th.classList.toggle(
+                'today-col-header',
+                dayIdx === todayDayIndex
+            );
         }
     });
 
     habits.forEach((habit) => {
         const tr = document.createElement('tr');
 
-        // Name TD
+        // Habit name
         const nameTd = document.createElement('td');
         nameTd.className = 'habit-name-cell';
 
@@ -218,69 +241,137 @@ export function renderHabitsTable() {
         let completedCount = 0;
         let totalTracked = 0;
 
-        // 7 days of the week: Mon = 0 ... Sun = 6
+        // Monday → Sunday
         for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+
             const targetDate = getWeekDayDate(currentDate, dayIndex);
+
             const y = targetDate.getFullYear();
             const m = targetDate.getMonth();
             const d = targetDate.getDate();
+
             const jsDay = targetDate.getDay();
 
-            const isSkippedDay = habit.skipDays && habit.skipDays.includes(jsDay);
-            const status = getHabitDayStatus(habit, y, m, d);
+            const isToday =
+                currentWeekKey === liveWeekKey &&
+                dayIndex === todayDayIndex;
+
+            const isFuture = targetDate > now;
+
+            const isSkippedDay =
+                habit.skipDays &&
+                habit.skipDays.includes(jsDay);
+
+            const status =
+                getHabitDayStatus(habit, y, m, d);
 
             const dayTd = document.createElement('td');
-            dayTd.className = `habit-cell ${dayIndex === todayDayIndex ? 'today-col-cell' : ''}`;
+
+            dayTd.className =
+                `habit-cell ${dayIndex === todayDayIndex ? 'today-col-cell' : ''}`;
+
+            /*
+             * ============================================================
+             * STATE LOGIC
+             *
+             * ✓ = completed
+             * - = past/present and not completed
+             * · = skipped by habit rule
+             * empty = future
+             * ============================================================
+             */
 
             if (isSkippedDay && !status) {
+
+                // Skipped by habit rule
                 dayTd.textContent = '·';
                 dayTd.classList.add('skipped');
+
             } else if (status === true) {
+
+                // Completed
                 dayTd.textContent = '✓';
                 dayTd.classList.add('checked');
+
                 completedCount++;
                 totalTracked++;
-            } else if (status === 'dash') {
-                dayTd.textContent = '-';
-                dayTd.classList.add('dash');
-                totalTracked++;
-            } else {
+
+            } else if (isFuture) {
+
+                // Future → empty
                 dayTd.textContent = '';
                 dayTd.classList.add('unchecked');
-                if (!isSkippedDay) totalTracked++;
+
+            } else {
+
+                // Past/today and not completed → dash
+                dayTd.textContent = '-';
+                dayTd.classList.add('dash');
+
+                totalTracked++;
             }
 
+            /*
+             * ============================================================
+             * CLICK
+             *
+             * Empty/future → ✓
+             * ✓ → -
+             * - → ✓
+             *
+             * Skipped days remain controlled by skip rules.
+             * ============================================================
+             */
+
             dayTd.addEventListener('click', () => {
+
                 if (!habit.name.trim()) return;
 
+                // Don't allow future days to be manually marked
+                if (isFuture) return;
+
                 let nextStatus;
-                if (status === false || !status) {
-                    nextStatus = true;
-                } else if (status === true) {
+
+                if (status === true) {
+                    // Done → missed
                     nextStatus = 'dash';
+
                 } else {
-                    nextStatus = false;
+                    // Missed/unmarked → done
+                    nextStatus = true;
                 }
 
-                setHabitDayStatus(habit.id, y, m, d, nextStatus);
+                setHabitDayStatus(
+                    habit.id,
+                    y,
+                    m,
+                    d,
+                    nextStatus
+                );
+
                 renderHabitsTable();
             });
 
             tr.appendChild(dayTd);
         }
 
-        // Score TD
+        // Score
         const scoreTd = document.createElement('td');
         scoreTd.className = 'habit-score-cell';
-        scoreTd.textContent = habit.name.trim() ? `${completedCount}/${totalTracked}` : '';
+
+        scoreTd.textContent = habit.name.trim()
+            ? `${completedCount}/${totalTracked}`
+            : '';
+
         tr.appendChild(scoreTd);
 
         tableBody.appendChild(tr);
     });
 
-    // Add Habit Button Row
+    // Add Habit row
     const addRow = document.createElement('tr');
     addRow.className = 'add-habit-row';
+
     const addTd = document.createElement('td');
     addTd.colSpan = 9;
     addTd.style.textAlign = 'left';
@@ -290,6 +381,7 @@ export function renderHabitsTable() {
     addBtn.type = 'button';
     addBtn.className = 'add-habit-trigger-btn';
     addBtn.innerHTML = '+ Add Habit';
+
     addBtn.onclick = () => openHabitModal(null);
 
     addTd.appendChild(addBtn);
@@ -531,6 +623,7 @@ export function renderHabitsMonthView() {
     addCard.onclick = () => openHabitModal(null);
     container.appendChild(addCard);
 }
+
 // ----------------- YEAR VIEW (2 Stacked Rows per Month with Large Tappable Squares) -----------------
 
 export function renderHabitsYearView() {
@@ -876,11 +969,10 @@ export function renderSleepChart() {
         // Tap column to open modal
         if (isPastOrToday) {
             col.style.cursor = 'pointer';
-           col.onclick = () => {
-    if (isDraggingSleep) return;
-
-    openSleepModal(index);
-};
+            col.onclick = () => {
+                if (isDraggingSleep) return;
+                openSleepModal(index);
+            };
         }
 
         const label = document.createElement('span');
@@ -898,8 +990,6 @@ export function renderSleepChart() {
 }
 
 // ----------------- INTERACTIVE TOUCH / POINTER DRAGGING ON CHART -----------------
-// Drag vertically on a day column to set hours slept.
-// On release, open star quality popup. Confirm saves both, Cancel reverts.
 
 let dragStartHours = 0; // Store original hours so Cancel can revert
 
@@ -917,50 +1007,31 @@ function setupSleepChartInteractivity() {
 
     function getColumnIndex(clientX) {
         const rect = grid.getBoundingClientRect();
-
         const relativeX = clientX - rect.left;
         const colWidth = rect.width / 7;
-
         const index = Math.floor(relativeX / colWidth);
 
         if (index < 0 || index >= 7) {
             return null;
         }
-
         return index;
     }
 
     function getHoursFromY(clientY) {
         const rect = grid.getBoundingClientRect();
-
-        // Keep the slider inside the chart
-        const relativeY = Math.max(
-            0,
-            Math.min(rect.height, clientY - rect.top)
-        );
-
-        // Top = 10 hours
-        // Bottom = 5 hours
+        const relativeY = Math.max(0, Math.min(rect.height, clientY - rect.top));
         const percent = 1 - (relativeY / rect.height);
-
         let hours = 5 + (percent * 5);
-
-        // 30 minute increments
         hours = Math.round(hours * 2) / 2;
-
         return Math.max(5, Math.min(10, hours));
     }
 
     function updateDraggedHours(clientY) {
         if (activeIndex === null) return;
-
         const hours = getHoursFromY(clientY);
 
         if (!sleepData[activeIndex]) {
-            sleepData[activeIndex] = {
-                hours: hours,
-                quality: 0
-            };
+            sleepData[activeIndex] = { hours: hours, quality: 0 };
         } else {
             sleepData[activeIndex].hours = hours;
         }
@@ -969,11 +1040,8 @@ function setupSleepChartInteractivity() {
     }
 
     function handlePointerDown(e) {
-        // Only primary finger / mouse button
         if (e.pointerType === 'mouse' && e.button !== 0) return;
-
         const index = getColumnIndex(e.clientX);
-
         if (index === null) return;
 
         const now = new Date();
@@ -981,32 +1049,25 @@ function setupSleepChartInteractivity() {
         const liveWeekKey = getWeekKey(now);
 
         let todayIndex = -1;
-
         if (currentWeekKey === liveWeekKey) {
             const jsDay = now.getDay();
             todayIndex = jsDay === 0 ? 6 : jsDay - 1;
         } else {
             const startTarget = getStartOfWeek(currentDate);
             const startLive = getStartOfWeek(now);
-
             todayIndex = startTarget > startLive ? -1 : 6;
         }
 
-        // Don't allow future days
         if (index > todayIndex) return;
 
         pointerDown = true;
         didDrag = false;
-
         activeIndex = index;
-
         startX = e.clientX;
         startY = e.clientY;
-
         dragStartHours = sleepData[index]?.hours || 0;
 
         chart.setPointerCapture?.(e.pointerId);
-
         e.preventDefault();
     }
 
@@ -1016,44 +1077,33 @@ function setupSleepChartInteractivity() {
         const dx = e.clientX - startX;
         const dy = e.clientY - startY;
 
-        // Require a small movement before considering this a drag
         if (!didDrag && Math.sqrt(dx * dx + dy * dy) > 6) {
             didDrag = true;
             isDraggingSleep = true;
         }
 
         if (!didDrag) return;
-
         e.preventDefault();
-
         updateDraggedHours(e.clientY);
     }
 
     function handlePointerUp(e) {
         if (!pointerDown) return;
-
         pointerDown = false;
 
         const index = activeIndex;
         activeIndex = null;
-
         chart.releasePointerCapture?.(e.pointerId);
 
         if (didDrag && index !== null) {
-            // Finger was dragged → open rating popup
             isDraggingSleep = true;
-
             openSleepQualityPopup(index);
-
-            // Prevent the normal column click from opening another modal
             setTimeout(() => {
                 isDraggingSleep = false;
             }, 300);
         } else {
-            // It was just a tap
             isDraggingSleep = false;
         }
-
         didDrag = false;
     }
 
@@ -1062,7 +1112,6 @@ function setupSleepChartInteractivity() {
         activeIndex = null;
         didDrag = false;
         isDraggingSleep = false;
-
         chart.releasePointerCapture?.(e.pointerId);
     }
 
@@ -1090,45 +1139,33 @@ function setupSleepModal() {
     });
 
     if (cancelBtn) {
-    cancelBtn.onclick = () => {
-        if (modalSleepIndex !== null) {
-            if (!sleepData[modalSleepIndex]) {
-                sleepData[modalSleepIndex] = {
-                    hours: 0,
-                    quality: 0
-                };
+        cancelBtn.onclick = () => {
+            if (modalSleepIndex !== null) {
+                if (!sleepData[modalSleepIndex]) {
+                    sleepData[modalSleepIndex] = { hours: 0, quality: 0 };
+                }
+                sleepData[modalSleepIndex].hours = dragStartHours;
+                renderSleepChart();
             }
-
-            sleepData[modalSleepIndex].hours = dragStartHours;
-
-            renderSleepChart();
-        }
-
-        modal.style.display = 'none';
-        modalSleepIndex = null;
-    };
-}
+            modal.style.display = 'none';
+            modalSleepIndex = null;
+        };
+    }
 
     if (confirmBtn) {
-    confirmBtn.onclick = () => {
-        if (modalSleepIndex !== null) {
-            if (!sleepData[modalSleepIndex]) {
-                sleepData[modalSleepIndex] = {
-                    hours: 0,
-                    quality: 0
-                };
+        confirmBtn.onclick = () => {
+            if (modalSleepIndex !== null) {
+                if (!sleepData[modalSleepIndex]) {
+                    sleepData[modalSleepIndex] = { hours: 0, quality: 0 };
+                }
+                sleepData[modalSleepIndex].quality = modalSelectedRating;
+                saveSleep();
+                renderSleepChart();
             }
-
-            sleepData[modalSleepIndex].quality = modalSelectedRating;
-
-            saveSleep();
-            renderSleepChart();
-        }
-
-        modal.style.display = 'none';
-        modalSleepIndex = null;
-    };
-}
+            modal.style.display = 'none';
+            modalSleepIndex = null;
+        };
+    }
 
     modal.onclick = (e) => {
         if (e.target === modal) {
@@ -1148,30 +1185,21 @@ function updateStarVisuals() {
         star.classList.toggle('active', r <= modalSelectedRating);
     });
 }
+
 function openSleepQualityPopup(index) {
     const modal = document.getElementById('sleepPromptModal');
     const hoursText = document.getElementById('promptHoursText');
-
     if (!modal) return;
 
     modalSleepIndex = index;
-
-    const current = sleepData[index] || {
-        hours: 7.5,
-        quality: 4
-    };
-
-    modalSelectedRating = current.quality > 0
-        ? current.quality
-        : 4;
+    const current = sleepData[index] || { hours: 7.5, quality: 4 };
+    modalSelectedRating = current.quality > 0 ? current.quality : 4;
 
     if (hoursText) {
-        hoursText.textContent =
-            `${DAYS_FULL[index]} · ${current.hours.toFixed(1)} hrs`;
+        hoursText.textContent = `${DAYS_FULL[index]} · ${current.hours.toFixed(1)} hrs`;
     }
 
     updateStarVisuals();
-
     modal.style.display = 'flex';
 }
 

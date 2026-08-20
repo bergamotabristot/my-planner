@@ -839,7 +839,7 @@
 .habit-year-month-label {
     width: 32px;
     text-align: center;
-    color: var(--text-color, #ffffff);
+    color: var(--text-color, #811a1a);
     font-size: 0.85rem;
     font-weight: 600;
     flex-shrink: 0;
@@ -848,8 +848,8 @@
 /* 2-row grid: 16 columns per row */
 .habit-year-month-grid {
     display: grid;
-    grid-template-columns: repeat(16, 1fr);
-    gap: 3px;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 4px;
     flex-grow: 1;
     min-width: 0;
 }
@@ -882,7 +882,7 @@
 }
 
 .habit-year-day-box.dash {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(255, 255, 255, 0.111);
 }
 
 .habit-year-month-stats {
@@ -907,4 +907,360 @@
     background: rgba(0, 0, 0, 0.25);
 
     pointer-events: auto;
+}
+
+/* ==========================================================================
+   WEEK VIEW — iPHONE / iOS STYLE
+   Keeps existing JS logic and class names
+   ========================================================================== */
+
+/* Main week table wrapper */
+#habits-week {
+    width: 100%;
+    min-height: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+/* Horizontal scrolling only when necessary */
+#habits-week .habits-table-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 2px 0 12px;
+    box-sizing: border-box;
+}
+
+#habits-week .habits-table-container::-webkit-scrollbar {
+    display: none;
+}
+
+/* --------------------------------------------------------------------------
+   TABLE
+   -------------------------------------------------------------------------- */
+
+#habits-week .habits-table {
+    width: 100%;
+    min-width: 520px;
+    border-collapse: separate;
+    border-spacing: 3px;
+    table-layout: fixed;
+
+    color: var(--text-color, #ffffff);
+    font-size: 0.82rem;
+}
+
+/* All cells */
+#habits-week .habits-table th,
+#habits-week .habits-table td {
+    border: none;
+    padding: 0;
+    height: 42px;
+    background: transparent;
+    box-sizing: border-box;
+}
+
+/* --------------------------------------------------------------------------
+   HEADER
+   -------------------------------------------------------------------------- */
+
+#habits-week .habits-table thead th {
+    height: 38px;
+    color: var(--text-muted, #8e8e93);
+    font-size: 0.72rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Habit-name header */
+#habits-week .habits-table thead th:first-child {
+    text-align: left;
+    padding-left: 10px;
+}
+
+/* Day header */
+#habits-week .habits-table th:not(:first-child) {
+    border-radius: 8px;
+}
+
+/* Today header */
+#habits-week .habits-table th.today-col-header {
+    color: var(--today-col-highlight, #ff6b81) !important;
+
+    background: rgba(255, 107, 129, 0.08) !important;
+
+    border: 1px solid rgba(255, 107, 129, 0.45) !important;
+    border-radius: 9px !important;
+
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 107, 129, 0.08);
+}
+
+/* --------------------------------------------------------------------------
+   HABIT NAME COLUMN
+   -------------------------------------------------------------------------- */
+
+#habits-week .habit-name-cell {
+    width: 34%;
+    min-width: 130px;
+
+    text-align: left;
+
+    padding: 0 8px 0 10px !important;
+
+    background: transparent;
+
+    font-size: 0.84rem;
+    font-weight: 500;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Habit name */
+#habits-week .habit-name-label {
+    display: block;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    color: var(--text-color, #ffffff);
+}
+
+/* --------------------------------------------------------------------------
+   HABIT CELLS
+   -------------------------------------------------------------------------- */
+
+#habits-week .habit-cell {
+    height: 42px;
+
+    border-radius: 9px;
+
+    background: var(
+        --input-bg,
+        rgba(255, 255, 255, 0.045)
+    );
+
+    border: 1px solid var(
+        --border-color,
+        rgba(255, 255, 255, 0.09)
+    );
+
+    font-size: 1rem;
+    font-weight: 600;
+
+    transition:
+        transform 0.1s ease,
+        background-color 0.15s ease,
+        border-color 0.15s ease;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Touch feedback */
+#habits-week .habit-cell:active {
+    transform: scale(0.92);
+}
+
+/* Checked */
+#habits-week .habit-cell.checked {
+    color: var(--accent-green, #4cd137);
+
+    background: rgba(76, 209, 55, 0.10);
+
+    border-color: rgba(76, 209, 55, 0.28);
+}
+
+/* Unchecked */
+#habits-week .habit-cell.unchecked {
+    color: var(--accent-red, #343232);
+
+    background: rgba(80, 80, 80, 0.07);
+
+    border-color: rgba(232, 65, 24, 0.22);
+}
+
+/* Dash */
+#habits-week .habit-cell.dash {
+    color: var(--accent-yellow, #fbc531);
+
+    background: rgba(80, 80, 80, 0.07);
+
+    border-color: rgba(251, 197, 49, 0.20);
+}
+
+/* Skipped */
+#habits-week .habit-cell.skipped {
+    color: var(--text-muted, #666666);
+
+    background: rgba(80, 80, 80, 0.07);
+
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* --------------------------------------------------------------------------
+   TODAY COLUMN
+   -------------------------------------------------------------------------- */
+
+/* Today cells get a subtle pink tint */
+#habits-week .habits-table td.today-col-cell {
+    background: rgba(255, 107, 129, 0.055) !important;
+
+    border-left: 1px solid rgba(255, 107, 129, 0.35) !important;
+    border-right: 1px solid rgba(255, 107, 129, 0.35) !important;
+
+    border-radius: 9px;
+}
+
+/* Make today's actual habit box sit nicely inside the column */
+#habits-week .habits-table td.today-col-cell .habit-cell {
+    box-shadow:
+        inset 0 0 0 1px rgba(255, 107, 129, 0.08);
+}
+
+/* Bottom of today column */
+#habits-week .habits-table tr:last-child td.today-col-cell {
+    border-bottom: 1px solid rgba(255, 107, 129, 0.35) !important;
+}
+
+/* --------------------------------------------------------------------------
+   SCORE COLUMN
+   -------------------------------------------------------------------------- */
+
+#habits-week .habit-score-cell {
+    color: var(--text-muted, #888888);
+
+    font-size: 0.72rem;
+
+    background: transparent;
+
+    border: none;
+}
+
+/* --------------------------------------------------------------------------
+   ADD HABIT
+   -------------------------------------------------------------------------- */
+
+#habits-week .add-habit-trigger-btn {
+    margin-top: 6px;
+
+    min-height: 40px;
+
+    background: transparent;
+
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+
+    border-radius: 9px;
+
+    color: var(--text-muted, #888888);
+
+    padding: 8px 12px;
+
+    font-size: 0.8rem;
+
+    -webkit-tap-highlight-color: transparent;
+}
+
+#habits-week .add-habit-trigger-btn:active {
+    background: rgba(255, 255, 255, 0.04);
+
+    border-color: rgba(255, 255, 255, 0.22);
+
+    color: var(--text-color, #ffffff);
+}
+
+/* --------------------------------------------------------------------------
+   iPHONE / SMALL SCREENS
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 600px) {
+
+    #habits-week .habits-table {
+        min-width: 500px;
+        border-spacing: 3px;
+        font-size: 0.78rem;
+    }
+
+    #habits-week .habits-table th,
+    #habits-week .habits-table td {
+        height: 40px;
+    }
+
+    #habits-week .habit-cell {
+        height: 40px;
+
+        border-radius: 8px;
+
+        font-size: 0.95rem;
+    }
+
+    #habits-week .habit-name-cell {
+        width: 31%;
+        min-width: 120px;
+
+        font-size: 0.8rem;
+        padding-left: 8px !important;
+    }
+
+    #habits-week .habits-table thead th {
+        font-size: 0.68rem;
+    }
+
+    #habits-week .habit-score-cell {
+        font-size: 0.68rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   VERY SMALL iPHONES
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 390px) {
+
+    #habits-week .habits-table {
+        min-width: 470px;
+        border-spacing: 2px;
+    }
+
+    #habits-week .habits-table th,
+    #habits-week .habits-table td {
+        height: 38px;
+    }
+
+    #habits-week .habit-cell {
+        height: 38px;
+        border-radius: 7px;
+        font-size: 0.9rem;
+    }
+
+    #habits-week .habit-name-cell {
+        min-width: 110px;
+        font-size: 0.76rem;
+    }
+}
+
+/* --------------------------------------------------------------------------
+   iOS TAP / SELECTION FIXES
+   -------------------------------------------------------------------------- */
+
+#habits-week button,
+#habits-week .habit-cell,
+#habits-week .habit-name-label {
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
+#habits-week button {
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Remove ugly blue tap flash on Safari */
+#habits-week * {
+    -webkit-tap-highlight-color: transparent;
 }
